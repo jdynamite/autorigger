@@ -2,7 +2,7 @@ import maya.cmds as cmds
 from rig import switch
 
 
-class control:
+class Control:
     """
     control class comprises of one control, and 1-2 null groups above
     if control name already exists, it will self populate the attrs
@@ -131,7 +131,7 @@ class control:
         # otherwise, create new control aligned to align_to
         # with same specs as self but different color
 
-        mirrored = control(self.name, other_side, align_to, self.shape)
+        mirrored = Control(self.name, other_side, align_to, self.shape)
 
         return mirrored
 
