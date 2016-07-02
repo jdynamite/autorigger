@@ -8,9 +8,19 @@ class Control:
     if control name already exists, it will self populate the attrs
     """
 
-    def __init__(self, name=None, side=None, align_to=None, shape=None):
+    kLeftPrefix = ["l", "lf", "l", "left"]
+    kRightPrefix = ["r", "rt", "right"]
+    kSidePrefix = kLeftPrefix + kRightPrefix
 
-        self.side_formats = ["l", "lf", "l", "left", "r", "rt", "right"]
+    @classmethod
+    def read_curves_from(path):
+        pass
+
+    @classmethod
+    def write_curves_to(path):
+        pass
+
+    def __init__(self, name=None, side=None, align_to=None, shape=None):
 
         self.name = name
         self.sanitize_name()
@@ -44,7 +54,7 @@ class Control:
         if "_CON" in self.name:
             self.name = self.name.replace("_CON", "")
 
-        for side in self.side_formats:
+        for side in Control.kSidePrefix:
             if self.name.startswith("%s_" % side):
                 self.name = "".join(self.name.split("_")[1:])
 
@@ -146,12 +156,12 @@ class Control:
         # remove alphanumeric characters from side
         self.side = ''.join([i for i in self.side if i.isalpha()])
 
-        if self.side.lower() not in self.side_formats:
+        if self.side.lower() not in Control.kSidePrefix:
             raise NotImplementedError("The input side is not a valid one.")
 
         # assert if resulting side is left or right
 
-        if self.side.lower() in ["l", "lf", "left"]:
+        if self.side.lower() in Control.kLeftPrefix:
             self.color = "blue"
         else:
             self.color = "red"

@@ -119,9 +119,16 @@ class WeightsRemapDialog(QtGui.QDialog):
 class SkinCluster(object):
     kFileExtension = '.skin'
     kWeightsFolder = 'weights'
+    kMeshSuffix = ["_REN", "_GEO", "_MESH", "_ren", "_geo", "_mesh"]
 
     @classmethod
     def pretty_name(cls, mesh, skin):
+
+        for suffix in cls.kMeshSuffix:
+            if mesh.endswith(suffix):
+                cmds.rename(skin, mesh.replace(suffix, "_sC"))
+                return
+
         cmds.rename(skin, mesh + "_sC")
 
     @classmethod
@@ -147,7 +154,7 @@ class SkinCluster(object):
         joints = data['weights'].keys()
 
         unused_imports = []
-        no_match = set([SkinCluster.remove_namespace_from(x)
+        no_match = set([cls.remove_namespace_from(x)
                         for x in cmds.ls(type='joint')])
 
         for j in joints:
@@ -183,11 +190,11 @@ class SkinCluster(object):
                 raise RuntimeError("No mesh selected or passed in.")
 
         if path is None:
-            path = SkinCluster.get_default_path()
-            path += mesh + SkinCluster.kFileExtension
+            path = cls.get_default_path()
+            path += mesh + cls.kFileExtension
 
-        elif not path.endswith(kFileExtension):
-            path += SkinCluster.kFileExtension
+        elif not path.endswith(cls.kFileExtension):
+            path += cls.kFileExtension
 
         the_file = open(path, 'rb')
         data = pickle.load(the_file)
@@ -202,25 +209,25 @@ class SkinCluster(object):
 
         if SkinCluster.get_skin(mesh):
             skin_cluster = SkinCluster(mesh)
-            data = SkinCluster.remap_joints(data)
+            data = cls.remap_joints(data)
 
         else:
-            data = SkinCluster.remap_joints(data)
+            data = cls.remap_joints(data)
             joints = data['weights'].keys()
             cmds.skinCluster(joints, mesh, tsb=True, nw=2, n=data['name'])
             skin_cluster = SkinCluster(mesh)
 
         skin_cluster.set_data(data)
-        print "Imported weights successfully from {}.".format(path)
+        print("Imported weights successfully from {}.".format(path))
 
     @classmethod
     def get_default_path(cls):
         wd = cmds.workspace(q=True, dir=True)
-        return wd + SkinCluster.kWeightsFolder + '/'
+        return wd + cls.kWeightsFolder + '/'
 
     @classmethod
     def get_skin(cls, mesh_shape):
-        mesh_shape = SkinCluster.get_shape(mesh_shape)
+        mesh_shape = cls.get_shape(mesh_shape)
         skins = cmds.ls(type="skinCluster")
         for skin in skins:
             try:
