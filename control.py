@@ -1,8 +1,11 @@
 import maya.cmds as cmds
 from rig import switch
+from lib.mayaBaseObject import MayaBaseObject
+from lib import jsonData
+from lib import controlFilePath
+from lib import curve as animCurve
 
-
-class Control:
+class Control(MayaBaseObject):
     """
     control class comprises of one control, and 1-2 null groups above
     if control name already exists, it will self populate the attrs
@@ -101,12 +104,25 @@ class Control:
         cmds.setAttr(full_attr, par)
 
     def set_shape(self, shape):
+
         for case in switch(shape):
             if case('circle'):
                 circle = cmds.circle(ch=False)[0]
                 self.get_shape_from(circle)
                 cmds.delete(circle)
                 break
+
+            else:
+                # call from prebuilt control shapes saved out to a file
+                controlDict = jsonData.load(controlFilePath.controlFilePath())
+                for shape in controlDict[self.shape]["shapes"]:
+                    positions = controlDict[self.shape]["shapes"][shape]["positions"]
+                    degree = controlDict[self.shape]["shapes"][shape]["degree"]
+                    # color = controlDict[self.shape]["shapes"][shape]["color"]
+                    curve = animCurve.createFromPoints(positions, degree, self.name)
+
+                    self.get_shape_from(curve)
+                    cmds.delete(curve)
 
     def mirror(self):
         # look for a mirror control object on the other side
@@ -191,8 +207,10 @@ class Control:
         # default : null -> con
 
         null = self.long_name.replace("CON", suffix)
-        self.null = cmds.duplicate(self.long_name, rc=True,
-                                   n=null)[0]
+        self.null = cmds.duplicate(
+            self.long_name,
+            rc=True,
+            n=null)[0]
 
         # delete children
         cmds.delete(cmds.listRelatives(self.null, ad=True))

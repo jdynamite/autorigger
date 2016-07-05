@@ -5,7 +5,7 @@ import maya.OpenMayaUI as omui
 import maya.OpenMayaAnim as omanim
 import maya.cmds as cmds
 
-from control import control
+from control import Control
 from rig import rig, switch, module
 import utils
 
