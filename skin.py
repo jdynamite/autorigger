@@ -142,7 +142,7 @@ class SkinCluster(object):
         cmds.rename(skin, mesh + "_sC")
 
     @classmethod
-    def get_joints(skin_cluster):
+    def get_joints(cls, skin_cluster):
         if skin_cluster is None:
             return None
 
