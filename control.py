@@ -1,19 +1,23 @@
 import maya.cmds as cmds
 from rig import switch
-from lib.mayaBaseObject import MayaBaseObject
+from lib import mayaBaseObject
 from lib import jsonData
 from lib import controlFilePath
 from lib import curve as animCurve
+from lib import nameSpace
 
-class Control(MayaBaseObject):
+reload(mayaBaseObject)
+
+class Control(mayaBaseObject.MayaBaseObject):
     """
     control class comprises of one control, and 1-2 null groups above
     if control name already exists, it will self populate the attrs
+
+
+    update: sanitize_name and format_name now in mayaBaseClass -dan
+
     """
 
-    kLeftPrefix = ["l", "lf", "l", "left"]
-    kRightPrefix = ["r", "rt", "right"]
-    kSidePrefix = kLeftPrefix + kRightPrefix
 
     @classmethod
     def read_curves_from(path):
@@ -24,9 +28,10 @@ class Control(MayaBaseObject):
         pass
 
     def __init__(self, name=None, side=None, align_to=None, shape=None):
-
+        super(Control, self).__init__(name)
         self.name = name
         self.sanitize_name()
+        self.nameType = nameSpace.CONTROL
 
         self.color = "yellow"
 
@@ -50,21 +55,12 @@ class Control(MayaBaseObject):
         else:
             self.build_control()
 
-    def sanitize_name(self):
-        if self.name is None:
-            self.name = "control"
-
-        if "_CON" in self.name:
-            self.name = self.name.replace("_CON", "")
-
-        for side in Control.kSidePrefix:
-            if self.name.startswith("%s_" % side):
-                self.name = "".join(self.name.split("_")[1:])
 
     def pop_control_attributes(self):
         self.align_to = cmds.getAttr("%s.align_to" % self.long_name)
         self.side = cmds.getAttr("%s.side" % self.long_name)
         self.color = cmds.getAttr("%s.color" % self.long_name)
+
 
     def build_control(self):
         self.long_name = cmds.createNode("transform", n=self.long_name)
@@ -161,28 +157,6 @@ class Control(MayaBaseObject):
 
         return mirrored
 
-    def format_name(self):
-
-        self.sanitize_name()
-
-        if not len(self.side):
-            self.long_name = "_".join([self.name, "CON"])
-            return
-
-        # remove alphanumeric characters from side
-        self.side = ''.join([i for i in self.side if i.isalpha()])
-
-        if self.side.lower() not in Control.kSidePrefix:
-            raise NotImplementedError("The input side is not a valid one.")
-
-        # assert if resulting side is left or right
-
-        if self.side.lower() in Control.kLeftPrefix:
-            self.color = "blue"
-        else:
-            self.color = "red"
-
-        self.long_name = "_".join([self.side, self.name, "CON"])
 
     def set_to_origin(self):
 
@@ -201,12 +175,13 @@ class Control(MayaBaseObject):
         cmds.delete(cmds.pointConstraint(temp_grp, target))
         cmds.delete(temp_grp)
 
-    def zero_out(self, suffix="NULL", method="default"):
+    #note: change this to work on not just controls. like it takes in an input of what to zero out
+    def zero_out(self, suffix=nameSpace.NULL, method="default"):
 
         # super : zero -> null -> con
         # default : null -> con
 
-        null = self.long_name.replace("CON", suffix)
+        null = self.long_name.replace( nameSpace.CONTROL, suffix)
         self.null = cmds.duplicate(
             self.long_name,
             rc=True,
@@ -217,7 +192,7 @@ class Control(MayaBaseObject):
         cmds.parent(self.long_name, self.null)
 
         if method == "super":
-            zero = self.long_name.replace("CON", "ZERO")
+            zero = self.long_name.replace( nameSpace.CONTROL, nameSpace.ZERO)
             self.zero = cmds.duplicate(self.long_name, rc=True,
                                        n=zero)[0]
 
