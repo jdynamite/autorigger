@@ -31,7 +31,7 @@ class switch(object):
             return False
 
 
-class rig:
+class Rig:
     """
     rig class should mantain a character's modules
     and be responsible for curating it: rebuilding
@@ -49,7 +49,7 @@ class rig:
             cmds.createNode("transform", n="%s_rig" % self.name)
 
 
-class module:
+class Module:
     """
     module class will need certain common utilities
     like building ik, fk, spines, connections,

@@ -1,3 +1,13 @@
+import cPickle as pickle
+from functools import partial
+import maya.OpenMaya as om
+import maya.OpenMayaUI as omui
+import maya.OpenMayaAnim as omanim
+import maya.cmds as cmds
+
+from PySide import QtGui, QtCore
+from shiboken import wrapInstance
+
 def show():
     dialog = SkinDialog(parent=get_maya_win())
     dialog.show()
@@ -132,7 +142,7 @@ class SkinCluster(object):
         cmds.rename(skin, mesh + "_sC")
 
     @classmethod
-    def get_joints(skin_cluster):
+    def get_joints(cls, skin_cluster):
         if skin_cluster is None:
             return None
 
