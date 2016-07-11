@@ -2,6 +2,7 @@
 utilities
 note: split l8r into package(s)
 """
+import maya.cmds as cmds
 
 
 def pivot_to_origin(obj):

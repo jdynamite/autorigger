@@ -16,7 +16,14 @@ ZERO = "ZERO"
 GUIDE = "GUIDE"
 SETUP = "SET"
 
+# extensions
+WEIGHTSEXTENSION = ".skin"
+
+# paths
+WEIGHTSFOLDER = "weights"
 
 # nodes
 MULTIPLYDIVIDE = "MDN"
 CONDITION = "CND"
+PLUSMINUSAVG = "PMA"
+REVERSE = "RVR"
