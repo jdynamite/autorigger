@@ -8,6 +8,9 @@ import maya.cmds as cmds
 from PySide import QtGui, QtCore
 from shiboken import wrapInstance
 
+from lib import nameSapce
+
+
 def show():
     dialog = SkinDialog(parent=get_maya_win())
     dialog.show()
@@ -127,8 +130,8 @@ class WeightsRemapDialog(QtGui.QDialog):
 
 
 class SkinCluster(object):
-    kFileExtension = '.skin'
-    kWeightsFolder = 'weights'
+    kFileExtension = nameSpace.WEIGHTSEXTENSION
+    kWeightsFolder = nameSpace.WEIGHTSFOLDER
     kMeshSuffix = ["_REN", "_GEO", "_MESH", "_ren", "_geo", "_mesh"]
 
     @classmethod

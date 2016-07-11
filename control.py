@@ -8,6 +8,7 @@ from lib import nameSpace
 
 reload(mayaBaseObject)
 
+
 class Control(mayaBaseObject.MayaBaseObject):
     """
     control class comprises of one control, and 1-2 null groups above
@@ -17,7 +18,6 @@ class Control(mayaBaseObject.MayaBaseObject):
     update: sanitize_name and format_name now in mayaBaseClass -dan
 
     """
-
 
     @classmethod
     def read_curves_from(path):
@@ -55,12 +55,10 @@ class Control(mayaBaseObject.MayaBaseObject):
         else:
             self.build_control()
 
-
     def pop_control_attributes(self):
         self.align_to = cmds.getAttr("%s.align_to" % self.long_name)
         self.side = cmds.getAttr("%s.side" % self.long_name)
         self.color = cmds.getAttr("%s.color" % self.long_name)
-
 
     def build_control(self):
         self.long_name = cmds.createNode("transform", n=self.long_name)
@@ -112,10 +110,12 @@ class Control(mayaBaseObject.MayaBaseObject):
                 # call from prebuilt control shapes saved out to a file
                 controlDict = jsonData.load(controlFilePath.controlFilePath())
                 for shape in controlDict[self.shape]["shapes"]:
-                    positions = controlDict[self.shape]["shapes"][shape]["positions"]
+                    positions = controlDict[self.shape][
+                        "shapes"][shape]["positions"]
                     degree = controlDict[self.shape]["shapes"][shape]["degree"]
                     # color = controlDict[self.shape]["shapes"][shape]["color"]
-                    curve = animCurve.createFromPoints(positions, degree, self.name)
+                    curve = animCurve.createFromPoints(
+                        positions, degree, self.name)
 
                     self.get_shape_from(curve)
                     cmds.delete(curve)
@@ -157,7 +157,6 @@ class Control(mayaBaseObject.MayaBaseObject):
 
         return mirrored
 
-
     def set_to_origin(self):
 
         # pop control to world origin
@@ -175,13 +174,14 @@ class Control(mayaBaseObject.MayaBaseObject):
         cmds.delete(cmds.pointConstraint(temp_grp, target))
         cmds.delete(temp_grp)
 
-    #note: change this to work on not just controls. like it takes in an input of what to zero out
+    # note: change this to work on not just controls. like it takes in an
+    # input of what to zero out
     def zero_out(self, suffix=nameSpace.NULL, method="default"):
 
         # super : zero -> null -> con
         # default : null -> con
 
-        null = self.long_name.replace( nameSpace.CONTROL, suffix)
+        null = self.long_name.replace(nameSpace.CONTROL, suffix)
         self.null = cmds.duplicate(
             self.long_name,
             rc=True,
@@ -192,7 +192,7 @@ class Control(mayaBaseObject.MayaBaseObject):
         cmds.parent(self.long_name, self.null)
 
         if method == "super":
-            zero = self.long_name.replace( nameSpace.CONTROL, nameSpace.ZERO)
+            zero = self.long_name.replace(nameSpace.CONTROL, nameSpace.ZERO)
             self.zero = cmds.duplicate(self.long_name, rc=True,
                                        n=zero)[0]
 
