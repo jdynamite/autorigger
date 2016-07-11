@@ -6,7 +6,7 @@ import maya.OpenMayaAnim as omanim
 import maya.cmds as cmds
 
 from control import Control
-from rig import rig, switch, module
+from rig import Rig, Switch, Module
 import utils
 
 from PySide import QtGui, QtCore

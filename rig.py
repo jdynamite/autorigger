@@ -7,7 +7,7 @@ art - be practical
 import maya.cmds as cmds
 
 
-class switch(object):
+class Switch(object):
     """
     switch routine to mimic other languages switch
     """

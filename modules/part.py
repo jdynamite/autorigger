@@ -12,6 +12,8 @@ from autorigger.lib import nameSpace
 from autorigger.lib import mayaBaseObject
 from autorigger import control
 
+reload(control)
+
 class Part(mayaBaseObject.MayaBaseObject):
 
     def __init__(self, name, position=[0,0,0]):

@@ -1,5 +1,5 @@
 import maya.cmds as cmds
-from rig import switch
+from rig import Switch
 from lib import mayaBaseObject
 from lib import jsonData
 from lib import controlFilePath
@@ -101,7 +101,7 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     def set_shape(self, shape):
 
-        for case in switch(shape):
+        for case in Switch(shape):
             if case('circle'):
                 circle = cmds.circle(ch=False)[0]
                 self.get_shape_from(circle)
