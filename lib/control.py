@@ -1,10 +1,10 @@
 import maya.cmds as cmds
-from rig import Switch
-from lib import mayaBaseObject
-from lib import jsonData
-from lib import controlFilePath
-from lib import curve as animCurve
-from lib import nameSpace
+from autorigger.rig import Switch
+from autorigger.lib import mayaBaseObject
+from autorigger.lib import jsonData
+from autorigger.lib import controlFilePath
+from autorigger.lib import curve as animCurve
+from autorigger.lib import nameSpace
 
 reload(mayaBaseObject)
 
@@ -53,14 +53,16 @@ class Control(mayaBaseObject.MayaBaseObject):
             self.pop_control_attributes()
 
         else:
-            self.build_control()
+            self.create()
 
     def pop_control_attributes(self):
         self.align_to = cmds.getAttr("%s.align_to" % self.long_name)
         self.side = cmds.getAttr("%s.side" % self.long_name)
         self.color = cmds.getAttr("%s.color" % self.long_name)
 
-    def build_control(self):
+    # considering changing this to just .create()
+    # much shorter and consistent
+    def create(self):
         self.long_name = cmds.createNode("transform", n=self.long_name)
         self.set_shape(self.shape)
 
@@ -233,3 +235,22 @@ class Control(mayaBaseObject.MayaBaseObject):
     def drive_parented(self, obj):
         if cmds.objExists(obj):
             cmds.parent(obj, self.long_name)
+
+
+class Guide(Control):
+    def __init__(self,name,position=(0,0,0),parent=None):
+        super(Guide,self).__init__(name,position,parent)
+
+    def create(self):
+
+        ctrlName = self.long_name
+        zeroGroup1 = self._zeroGroup1
+        cmds.createNode("transform",n=zeroGroup1)
+
+        guideShape = cmds.createNode("implicitSphere")
+        cmds.rename(cmds.listRelatives(guideShape,p=True),ctrlName)
+        cmds.parent(ctrlName,zeroGroup1)
+
+        cmds.xform(zeroGroup1,ws=True, t=self.position)
+        if self.getParent():
+            cmds.parent(self.getZeroGroup1(), self.getParent())

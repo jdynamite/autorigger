@@ -10,7 +10,7 @@ Modules will inherit mainly from this base Part Class
 import maya.cmds as cmds
 from autorigger.lib import nameSpace
 from autorigger.lib import mayaBaseObject
-from autorigger import control
+from autorigger.lib import control
 
 reload(control)
 
@@ -38,6 +38,10 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.skeletonGroup = "{0}_skeleton_{1}".format(self.getName(), nameSpace.GROUP)
         self.guidesGroup = "{0}_{1}_{2}".format(self.getName(), nameSpace.GUIDE, nameSpace.GROUP)
         self.masterGuide = control.Control("{0}_master_{1}".format(self.getName(), nameSpace.GUIDE))
+
+    # just using this for now as a quick workaround. Can change it later.
+    def getSide(self):
+        return nameSpace.getSide(self.getName())
 
     def setup(self):
 
@@ -92,3 +96,13 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.preBuild()
         self.build()
         self.postBuild()
+
+    def createGuide(self, name, jnt, position=(0, 0, 0), parent=None):
+        guide = control.Guide(name, position, parent)
+        # guide.create()
+        guide.setColor(self.getColor())
+        # [0] because i think constriants returns 2 in a variable
+        # just like how polygons get returned in an array in mel thanks to shape
+        constraint = cmds.pointConstraint(name, jnt)[0]
+        cmds.parent(constraint)
+        return guide

@@ -12,15 +12,19 @@ class MayaBaseObject(object):
     kRightPrefix = ["r", "rt", "right"]
     kSidePrefix = kLeftPrefix + kRightPrefix
 
-    def __init__(self, name, position=(0, 0, 0), parent="None"):
+    def __init__(self, name, position=(0, 0, 0), parent="None", nameType=None, side=None):
 
         self.name = name
+        self.nameType = nameType
+
         self.position = position
         self.parent = parent
         self.long_name = None
 
-        #Null is default. _JNT, _CON, _GRP, etc...
-        self.nameType = "NULL"
+        if side is None:
+            side = ""
+        self.side = side
+
 
     def sanitize_name(self):
         if self.name is None:
@@ -42,6 +46,7 @@ class MayaBaseObject(object):
         if not len(self.side):
             self.long_name = "_".join([self.name, self.nameType])
             return
+
 
         # remove alphanumeric characters from side
         self.side = ''.join([i for i in self.side if i.isalpha()])
