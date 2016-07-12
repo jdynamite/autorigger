@@ -30,20 +30,19 @@ reload(spline)
 #limb inherits a bit from IkfkLimb
 class Limb(part.Part):
 
-    def __init__(self, name, position=([1,0,0],[5,0,-2],[10,0,0]), mirror=True):
-        super(Limb, self).__init__(name)
+    def __init__(self, name, side, position=([1,0,0],[5,0,-2],[10,0,0]), mirror=True):
+        super(Limb, self).__init__(name=name, side=side)
 
         #this is just strings of joint names
-        self.startJoint = joint.Joint("{0}_upLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
-        print self.startJoint.getName()
-        self.middleJoint = joint.Joint("{0}_loLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
-        self.endJoint = joint.Joint("{0}_endLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
+        self.startJoint = joint.Joint(name="upLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
+        self.middleJoint = joint.Joint(name="loLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
+        self.endJoint = joint.Joint(name="endLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
 
         #this sets up the ribbon master group
-        self.ribbonMasterGroup = "{0}_rbn_master_grp".format(name)
+        self.ribbonMasterGroup = "{0}_rbn_master_grp".format(self.getLongName())
 
         #group that allows scale for stretch rig
-        self.scaleStretchGroup = "{0}_distance_grp".format( self.getName() )
+        self.scaleStretchGroup = "{0}_distance_grp".format(self.getLongName())
 
         self.mirror = mirror
 
@@ -70,10 +69,11 @@ class Limb(part.Part):
             jnt.setParent(parent)
             self.guides.append(
                 self.createGuide(
-                    jnt.getName().replace(nameSpace.BINDJOINT,nameSpace.GUIDE),
-                    jnt.getName(),
-                    jnt.getPosition(),
-                    self.masterGuide.getName()
+                    name = jnt.getName().replace(nameSpace.BINDJOINT,nameSpace.GUIDE),
+                    side = jnt.getSide(),
+                    jnt = jnt.getName(),
+                    position = jnt.getPosition(),
+                    parent = self.masterGuide.getName()
                     )
             )
             parent = jnt.getName()
@@ -104,7 +104,7 @@ class Limb(part.Part):
                         ["x","y","z","-x","-y","-z"],
                         [[1,0,0],[0,1,0],[0,0,1],[-1,0,0],[0,-1,0],[0,0,-1]])
 
-#this part is the up vector math
+        #this part is the up vector math
         #plus minus average nodes
         pma1 = cmds.createNode("plusMinusAverage",n="{0}_001_pma".format(self.getName()))
         pma2 = cmds.createNode("plusMinusAverage",n="{0}_002_pma".format(self.getName()))

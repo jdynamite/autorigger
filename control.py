@@ -1,10 +1,10 @@
 import maya.cmds as cmds
-from autorigger.rig import Switch
-from autorigger.lib import mayaBaseObject
-from autorigger.lib import jsonData
-from autorigger.lib import controlFilePath
-from autorigger.lib import curve as animCurve
-from autorigger.lib import nameSpace
+from rig import switch
+from lib import mayaBaseObject
+from lib import jsonData
+from lib import controlFilePath
+from lib import curve as animCurve
+from lib import nameSpace
 
 reload(mayaBaseObject)
 
@@ -27,26 +27,31 @@ class Control(mayaBaseObject.MayaBaseObject):
     def write_curves_to(path):
         pass
 
-    def __init__(self, name="control", side="", align_to="world", shape="circle", parent="None"):
-        super(Control, self).__init__(name=name, side=side, nameType = nameSpace.CONTROL, parent=parent)
+    def __init__(self, name=None, side=None, align_to=None, shape=None):
+        super(Control, self).__init__(name=name, side=side, nameType=nameSpace.CONTROL)
 
+        self.color = "yellow"
+
+        if align_to is None:
+            align_to = "world"
         self.align_to = align_to
+
+        if shape is None:
+            shape = "circle"
         self.shape = shape
 
         if cmds.objExists("%s.isControl" % (self.long_name)):
             self.pop_control_attributes()
 
         else:
-            self.create()
+            self.build_control()
 
     def pop_control_attributes(self):
         self.align_to = cmds.getAttr("%s.align_to" % self.long_name)
         self.side = cmds.getAttr("%s.side" % self.long_name)
         self.color = cmds.getAttr("%s.color" % self.long_name)
 
-    # considering changing this to just .create()
-    # much shorter and consistent
-    def create(self):
+    def build_control(self):
         self.long_name = cmds.createNode("transform", n=self.long_name)
         self.set_shape(self.shape)
 
@@ -85,7 +90,7 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     def set_shape(self, shape):
 
-        for case in Switch(shape):
+        for case in switch(shape):
             if case('circle'):
                 circle = cmds.circle(ch=False)[0]
                 self.get_shape_from(circle)
@@ -162,13 +167,12 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     # note: change this to work on not just controls. like it takes in an
     # input of what to zero out
+    def zero_out(self, suffix=nameSpace.NULL, method="default"):
 
-    # I can make this happen l8r by making this a classmethod of mayaBaseObject
-    # or just a method of mayaBaseObject -juan
+        # super : zero -> null -> con
+        # default : null -> con
 
-    def zero_out(self):
-
-        null = self.long_name.replace(nameSpace.CONTROL, nameSpace.NULL)
+        null = self.long_name.replace(nameSpace.CONTROL, suffix)
         self.null = cmds.duplicate(
             self.long_name,
             rc=True,
@@ -176,18 +180,16 @@ class Control(mayaBaseObject.MayaBaseObject):
 
         # delete children
         cmds.delete(cmds.listRelatives(self.null, ad=True))
-
-        zero = self.long_name.replace(nameSpace.CONTROL, nameSpace.ZERO)
-        self.zero = cmds.duplicate(self.long_name, rc=True, n=zero)[0]
-
-        # delete children
-        cmds.delete(cmds.listRelatives(self.zero, ad=True))
         cmds.parent(self.long_name, self.null)
-        cmds.parent(self.null, self.zero)
 
-        if self.parent is not None and cmds.objExists(self.parent):
-            cmds.parent(self.zero, self.parent)
+        if method == "super":
+            zero = self.long_name.replace(nameSpace.CONTROL, nameSpace.ZERO)
+            self.zero = cmds.duplicate(self.long_name, rc=True,
+                                       n=zero)[0]
 
+            # delete children
+            cmds.delete(cmds.listRelatives(self.zero, ad=True))
+            cmds.parent(self.null, self.zero)
 
     def get_shape_from(self, obj):
 
@@ -222,25 +224,3 @@ class Control(mayaBaseObject.MayaBaseObject):
     def drive_parented(self, obj):
         if cmds.objExists(obj):
             cmds.parent(obj, self.long_name)
-
-
-class Guide(Control):
-
-    def __init__(self, name, side, position=(0, 0, 0), parent=None):
-        super(Guide, self).__init__(name, side, position, parent)
-
-    def create(self):
-        pass
-        '''
-        ctrlName = self.long_name
-        zeroGroup1 = self.zero
-        cmds.createNode("transform", n=zeroGroup1)
-
-        guideShape = cmds.createNode("implicitSphere")
-        cmds.rename(cmds.listRelatives(guideShape, p=True), ctrlName)
-        cmds.parent(ctrlName, zeroGroup1)
-
-        cmds.xform(zeroGroup1, ws=True, t=self.position)
-        if self.getParent():
-            cmds.parent(self.getZeroGroup1(), self.getParent())
-        '''

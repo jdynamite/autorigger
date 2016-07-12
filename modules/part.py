@@ -11,37 +11,28 @@ import maya.cmds as cmds
 from autorigger.lib import nameSpace
 from autorigger.lib import mayaBaseObject
 from autorigger.lib import control
+from autorigger.lib import nameSpace
 
 reload(control)
 
 class Part(mayaBaseObject.MayaBaseObject):
 
-    def __init__(self, name, position=[0,0,0]):
-
-        self.name = name
-        # base position of the partRig
-        self.position = position
-
-        self.group = "{0}_master_{1}".format(name, nameSpace.GROUP)
-        self.jointsGroup = "{0}_joints_{1}".format(name, nameSpace.GROUP)
-        self.controlsGroup = "{0}_controls_{1}".format(name, nameSpace.GROUP)
-        self.noXformGroup = "{0}_noXform_{1}".format(name, nameSpace.GROUP)
-        self.hookGroup = "{0}_hook_{1}".format(name, nameSpace.GROUP)
-
-        self.nameType = nameSpace.GROUP
+    def __init__(self, name, side, position=[0,0,0]):
+        super(Part, self).__init__(name=name, side=side, position=position, nameType=nameSpace.GROUP)
+        self.group = "{0}_master_{1}".format(self.long_name, nameSpace.GROUP)
+        self.jointsGroup = "{0}_joints_{1}".format(self.long_name, nameSpace.GROUP)
+        self.controlsGroup = "{0}_controls_{1}".format(self.long_name, nameSpace.GROUP)
+        self.noXformGroup = "{0}_noXform_{1}".format(self.long_name, nameSpace.GROUP)
+        self.hookGroup = "{0}_hook_{1}".format(self.long_name, nameSpace.GROUP)
 
     def hookTo(self, hooker):
         pass
 
     def initializeSetup(self):
-        self.setupGroup = "{0}_{1}_{2}".format(self.getName(), nameSpace.SETUP, nameSpace.GROUP)
-        self.skeletonGroup = "{0}_skeleton_{1}".format(self.getName(), nameSpace.GROUP)
-        self.guidesGroup = "{0}_{1}_{2}".format(self.getName(), nameSpace.GUIDE, nameSpace.GROUP)
-        self.masterGuide = control.Control("{0}_master_{1}".format(self.getName(), nameSpace.GUIDE))
-
-    # just using this for now as a quick workaround. Can change it later.
-    def getSide(self):
-        return nameSpace.getSide(self.getName())
+        self.setupGroup = nameSpace.DELIMITER.join([self.side, self.name, nameSpace.SETUP, nameSpace.GROUP])
+        self.skeletonGroup = "{0}_{1}_skeleton_{2}".format(self.side, self.name, nameSpace.GROUP)
+        self.guidesGroup = nameSpace.DELIMITER.join([self.side, self.name, nameSpace.GUIDE, nameSpace.GROUP])
+        self.masterGuide = control.Control(name="master_{1}".format(self.getName(), nameSpace.GUIDE), side=self.side)
 
     def setup(self):
 
@@ -97,12 +88,18 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.build()
         self.postBuild()
 
-    def createGuide(self, name, jnt, position=(0, 0, 0), parent=None):
-        guide = control.Guide(name, position, parent)
+    def createGuide(self, name, side, jnt, position=(0, 0, 0), parent="world"):
+        guide = control.Guide(name=name, position=position, side=side, parent=parent)
+
         # guide.create()
         guide.setColor(self.getColor())
+
         # [0] because i think constriants returns 2 in a variable
         # just like how polygons get returned in an array in mel thanks to shape
-        constraint = cmds.pointConstraint(name, jnt)[0]
+
+        # this line is bugging out, firs argument used to be name
+        # but changing to guide.long_name didn't work
+        constraint = cmds.pointConstraint(guide.long_name, jnt)[0]
         cmds.parent(constraint)
+
         return guide
