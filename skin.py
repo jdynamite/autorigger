@@ -8,8 +8,7 @@ import maya.cmds as cmds
 from PySide import QtGui, QtCore
 from shiboken import wrapInstance
 
-from lib import nameSapce
-
+from lib import nameSpace
 
 def show():
     dialog = SkinDialog(parent=get_maya_win())
@@ -349,7 +348,7 @@ class SkinCluster(object):
             self.data[attr] = cmds.getAttr(
                 "{}.{}".format(self.skin_cluster, attr))
 
-        self.data[name] = self.skin_cluster
+        self.data["name"] = self.skin_cluster
 
     def _get_components(self):
         """
