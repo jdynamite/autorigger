@@ -19,7 +19,6 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-
     def __init__(self, name=None, align_to=None, shape=None):
         super(Control, self).__init__(name)
 
@@ -37,14 +36,6 @@ class Control(mayaBaseObject.MayaBaseObject):
         if shape is None:
             shape = "circle"
         self.shape = shape
-
-        '''
-        if cmds.objExists("%s.isControl" % (self.long_name)):
-            self.pop_control_attributes()
-
-        else:
-            self.create()
-        '''
 
     def getNull(self):
         return self.null
@@ -232,28 +223,26 @@ class Control(mayaBaseObject.MayaBaseObject):
 
 
 class Guide(Control):
-    def __init__(self,name,position=(0,0,0),parent=None):
-        super(Guide,self).__init__(name,position,parent)
+    def __init__(self, name, position=(0, 0, 0), parent=None):
+        super(Guide, self).__init__(name, position, parent)
         self.position = position
         self.parent = parent
 
     def create(self):
-
         ctrlName = self.name
         guideShape = cmds.createNode("implicitSphere")
-        cmds.rename(cmds.listRelatives(guideShape,p=True),ctrlName)
+        cmds.rename(cmds.listRelatives(guideShape, p=True), ctrlName)
 
-        #create guide nulls
-        null = cmds.createNode("transform", n=ctrlName+"_NULL")
+        # create guide nulls
+        null = cmds.createNode("transform", n=ctrlName + "_NULL")
         cmds.parent(ctrlName, null)
 
-        #position null
+        # position null
         self.setPosition(self.position)
-        #cmds.xform(null, ws=True, t=self.position)
+        # cmds.xform(null, ws=True, t=self.position)
 
-        print 'parent is {0}'.format( self.parent )
+        print 'parent is {0}'.format(self.parent)
 
-        #insert into hierarchy accordingly
+        # insert into hierarchy accordingly
         if self.getParent():
-            cmds.parent( null, self.getParent())
-
+            cmds.parent(null, self.getParent())

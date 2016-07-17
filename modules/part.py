@@ -14,9 +14,10 @@ from autorigger.lib import control
 
 reload(control)
 
+
 class Part(mayaBaseObject.MayaBaseObject):
 
-    def __init__(self, name, position=[0,0,0]):
+    def __init__(self, name, position=[0, 0, 0]):
 
         self.name = name
         # base position of the partRig
@@ -35,10 +36,14 @@ class Part(mayaBaseObject.MayaBaseObject):
         pass
 
     def initializeSetup(self):
-        self.setupGroup = "{0}_{1}_{2}".format(self.getName(), nameSpace.SETUP, nameSpace.GROUP)
-        self.skeletonGroup = "{0}_skeleton_{1}".format(self.getName(), nameSpace.GROUP)
-        self.guidesGroup = "{0}_{1}_{2}".format(self.getName(), nameSpace.GUIDE, nameSpace.GROUP)
-        self.masterGuide = control.Control("{0}_master_{1}".format(self.getName(), nameSpace.GUIDE))
+        self.setupGroup = "{0}_{1}_{2}".format(
+            self.getName(), nameSpace.SETUP, nameSpace.GROUP)
+        self.skeletonGroup = "{0}_skeleton_{1}".format(
+            self.getName(), nameSpace.GROUP)
+        self.guidesGroup = "{0}_{1}_{2}".format(
+            self.getName(), nameSpace.GUIDE, nameSpace.GROUP)
+        self.masterGuide = control.Control(
+            "{0}_master_{1}".format(self.getName(), nameSpace.GUIDE))
 
     # just using this for now as a quick workaround. Can change it later.
     def getSide(self):
@@ -46,7 +51,7 @@ class Part(mayaBaseObject.MayaBaseObject):
 
     def setup(self):
 
-        #create self.variable for groups
+        # create self.variable for groups
         self.initializeSetup()
 
         cmds.createNode("transform", n=self.setupGroup)
@@ -82,13 +87,14 @@ class Part(mayaBaseObject.MayaBaseObject):
 
         cmds.delete(self.guidesGroup)
 
-        cmds.parent(cmds.listRelatives(self.skeletonGroup, c=True), self.jointsGroup)
+        cmds.parent(cmds.listRelatives(
+            self.skeletonGroup, c=True), self.jointsGroup)
 
         cmds.delete(self.setupGroup)
 
-
     def build(self):
-        #build will be coded in respective modules. This is just going to be inhereited empty
+        # build will be coded in respective modules. This is just going to be
+        # inhereited empty
         pass
 
     def postBuild(self):
@@ -104,7 +110,8 @@ class Part(mayaBaseObject.MayaBaseObject):
         guide.create()
         guide.setColor(self.getColor())
         # [0] because i think constriants returns 2 in a variable
-        # just like how polygons get returned in an array in mel thanks to shape
+        # just like how polygons get returned in an array in mel thanks to
+        # shape
         constraint = cmds.pointConstraint(name, jnt)[0]
         cmds.parent(constraint)
         return guide
