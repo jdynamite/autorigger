@@ -20,7 +20,6 @@ class Control(mayaBaseObject.MayaBaseObject):
     """
 
 
-<<<<<<< HEAD
     def __init__(self, name=None, align_to=None, shape=None):
         super(Control, self).__init__(name)
 
@@ -33,28 +32,11 @@ class Control(mayaBaseObject.MayaBaseObject):
 
         if align_to is None:
             align_to = "world"
-=======
-    @classmethod
-    def write_curves_to(path):
-        pass
 
-    def __init__(self, name="control", side="", align_to="world", shape="circle", parent="None"):
-        super(Control, self).__init__(name=name, side=side, nameType = nameSpace.CONTROL, parent=parent)
-
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
         self.align_to = align_to
         self.shape = shape
 
-<<<<<<< HEAD
-        '''
-=======
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-        if cmds.objExists("%s.isControl" % (self.long_name)):
-            self.pop_control_attributes()
 
-        else:
-            self.create()
-        '''
 
     def getNull(self):
         return self.null
@@ -188,11 +170,8 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     def zero_out(self):
 
-<<<<<<< HEAD
         null = self.name + "_" + suffix
-=======
-        null = self.long_name.replace(nameSpace.CONTROL, nameSpace.NULL)
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+
         self.null = cmds.duplicate(
             self.long_name,
             rc=True,
@@ -249,18 +228,13 @@ class Control(mayaBaseObject.MayaBaseObject):
 
 
 class Guide(Control):
-<<<<<<< HEAD
     def __init__(self,name,position=(0,0,0),parent=None):
         super(Guide,self).__init__(name,position,parent)
         self.position = position
         self.parent = parent
-=======
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
 
-    def __init__(self, name, side, position=(0, 0, 0), parent=None):
-        super(Guide, self).__init__(name, side, position, parent)
 
-<<<<<<< HEAD
+
         ctrlName = self.name
         guideShape = cmds.createNode("implicitSphere")
         cmds.rename(cmds.listRelatives(guideShape,p=True),ctrlName)
@@ -279,20 +253,4 @@ class Guide(Control):
         if self.getParent():
             cmds.parent( null, self.getParent())
 
-=======
-    def create(self):
-        pass
-        '''
-        ctrlName = self.long_name
-        zeroGroup1 = self.zero
-        cmds.createNode("transform", n=zeroGroup1)
 
-        guideShape = cmds.createNode("implicitSphere")
-        cmds.rename(cmds.listRelatives(guideShape, p=True), ctrlName)
-        cmds.parent(ctrlName, zeroGroup1)
-
-        cmds.xform(zeroGroup1, ws=True, t=self.position)
-        if self.getParent():
-            cmds.parent(self.getZeroGroup1(), self.getParent())
-        '''
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd

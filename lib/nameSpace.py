@@ -67,9 +67,17 @@ def getSide(name):
     if splitName:
 
         # if not L_, R_, or C_
-        if (splitName[0] == RIGHT) or (splitName[0] == LEFT) or (splitName[0] == CENTER):
+        if (splitName[0] == RIGHT):
             return splitName[0]
+
+        elif (splitName[0] == LEFT):
+            return splitName[0]
+
+        elif (splitName[0] == CENTER):
+            return splitName[0]
+
+        #error
         else:
-            raise RunTimeError("NAME input must start with a side prefix of 'L_', 'R_', or 'C_' ! " )
+            raise RuntimeError("NAME input must start with a side prefix of 'L_', 'R_', or 'C_' !" )
 
     return None

@@ -5,10 +5,8 @@ import maya.cmds as cmds
 import curve as animCurve
 from autorigger.lib import nameSpace
 reload(animCurve)
-<<<<<<< HEAD
 reload(nameSpace)
-=======
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+
 
 
 def dump(data):

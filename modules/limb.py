@@ -31,30 +31,29 @@ reload(spline)
 #limb inherits a bit from IkfkLimb
 class Limb(part.Part):
 
-    def __init__(self, name, side, position=([1,0,0],[5,0,-2],[10,0,0]), mirror=True):
-        super(Limb, self).__init__(name=name, side=side)
+    def __init__(self, name, position=([1,0,0],[5,0,-2],[10,0,0]), mirror=True):
+        super(Limb, self).__init__(name=name)
+
+        self.side = nameSpace.getSide(self.name)
 
         #this is just strings of joint names
-<<<<<<< HEAD
-        self.startJoint = joint.Joint("{0}_upLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
-        self.middleJoint = joint.Joint("{0}_loLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
-        self.endJoint = joint.Joint("{0}_endLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
-=======
-        self.startJoint = joint.Joint(name="upLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
-        self.middleJoint = joint.Joint(name="loLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
-        self.endJoint = joint.Joint(name="endLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+        self.startJoint = joint.Joint("{0}_upLimb_{1}".format(self.side,nameSpace.BINDJOINT))
+        self.middleJoint = joint.Joint("{0}_loLimb_{1}".format(self.side,nameSpace.BINDJOINT))
+        self.endJoint = joint.Joint("{0}_endLimb_{1}".format(self.side,nameSpace.BINDJOINT))
 
         #this sets up the ribbon master group
-        self.ribbonMasterGroup = "{0}_rbn_master_grp".format(self.getLongName())
+        self.ribbonMasterGroup = "{0}_rbn_master_grp".format(self.getName())
 
         #group that allows scale for stretch rig
-        self.scaleStretchGroup = "{0}_distance_grp".format(self.getLongName())
+        self.scaleStretchGroup = "{0}_distance_grp".format(self.getName())
+
+
 
         self.mirror = mirror
 
         #load necessary plugins
         util.isPluginLoaded('matrixNodes')
+
 
     def setup(self):
         super(Limb,self).setup()
@@ -64,10 +63,10 @@ class Limb(part.Part):
         parent = self.skeletonGroup
 
         jntPositions = list()
-        if self.getSide() == nameSpace.LEFT:
+        if self.side == nameSpace.LEFT:
             jntPositions = ([1,0,0],[4.5,0,-0.5],[8,0,0])
 
-        elif self.getSide() == nameSpace.RIGHT:
+        elif self.side == nameSpace.RIGHT:
             jntPositions = ([-1,0,0],[-4.5,0,-0.5],[-8,0,0])
 
 
@@ -81,16 +80,10 @@ class Limb(part.Part):
             self.guides.append(
                 self.createGuide(
                     name = jnt.getName().replace(nameSpace.BINDJOINT,nameSpace.GUIDE),
-<<<<<<< HEAD
                     jnt = jnt.getName(),
                     position = jnt.getPosition(),
                     parent = self.guidesGroup
-=======
-                    side = jnt.getSide(),
-                    jnt = jnt.getName(),
-                    position = jnt.getPosition(),
-                    parent = self.masterGuide.getName()
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+
                     )
             )
             parent = jnt.getName()

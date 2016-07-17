@@ -17,7 +17,6 @@ reload(control)
 
 class Part(mayaBaseObject.MayaBaseObject):
 
-<<<<<<< HEAD
     def __init__(self, name, position=[0,0,0]):
 
         self.name = name
@@ -32,15 +31,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.hookGroup = "{0}_hook_{1}".format(name, nameSpace.GROUP)
 
         self.nameType = nameSpace.GROUP
-=======
-    def __init__(self, name, side, position=[0,0,0]):
-        super(Part, self).__init__(name=name, side=side, position=position, nameType=nameSpace.GROUP)
-        self.group = "{0}_master_{1}".format(self.long_name, nameSpace.GROUP)
-        self.jointsGroup = "{0}_joints_{1}".format(self.long_name, nameSpace.GROUP)
-        self.controlsGroup = "{0}_controls_{1}".format(self.long_name, nameSpace.GROUP)
-        self.noXformGroup = "{0}_noXform_{1}".format(self.long_name, nameSpace.GROUP)
-        self.hookGroup = "{0}_hook_{1}".format(self.long_name, nameSpace.GROUP)
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+
 
     def hookTo(self, hooker):
         pass
@@ -49,7 +40,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.setupGroup = nameSpace.DELIMITER.join([self.side, self.name, nameSpace.SETUP, nameSpace.GROUP])
         self.skeletonGroup = "{0}_{1}_skeleton_{2}".format(self.side, self.name, nameSpace.GROUP)
         self.guidesGroup = nameSpace.DELIMITER.join([self.side, self.name, nameSpace.GUIDE, nameSpace.GROUP])
-        self.masterGuide = control.Control(name="master_{1}".format(self.getName(), nameSpace.GUIDE), side=self.side)
+        self.masterGuide = control.Control(name="{0}_master_{1}".format(self.getName(), nameSpace.GUIDE))
 
     def setup(self):
 
@@ -106,16 +97,10 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.build()
         self.postBuild()
 
-<<<<<<< HEAD
     def createGuide(self, name, jnt, position=(0, 0, 0), parent=None):
         guide = control.Guide(name, position, parent)
         guide.create()
-=======
-    def createGuide(self, name, side, jnt, position=(0, 0, 0), parent="world"):
-        guide = control.Guide(name=name, position=position, side=side, parent=parent)
 
-        # guide.create()
->>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
         guide.setColor(self.getColor())
 
         # [0] because i think constriants returns 2 in a variable
