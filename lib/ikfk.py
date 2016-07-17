@@ -17,14 +17,14 @@ reload(nameSpace)
 
 class Ikfk(object):
     def __init__(self, originalJoints):
-
         '''Initialize method
         :param originalJoints: Joints to build ik/fk system on
         :type originalJoints: list or tuple
         '''
 
         if not isinstance(originalJoints, list) and not isinstance(originalJoints, tuple):
-            raise TypeError("{0} is not of type list or tuple.".format(orignalJoints))
+            raise TypeError(
+                "{0} is not of type list or tuple.".format(orignalJoints))
 
         # Declare class members
 
@@ -58,11 +58,13 @@ class Ikfk(object):
 
     def setOriginalJoints(self, value):
         if not isinstance(originalJoints, list) and not isinstance(originalJoints, tuple):
-            raise TypeError("{0} is not of type list or tuple".format(originalJoints))
+            raise TypeError(
+                "{0} is not of type list or tuple".format(originalJoints))
 
         for jnt in value:
             if not cmds.objExists(jnt):
-                raise RuntineError("{0} does not exist in your currect scene".format(jnt))
+                raise RuntineError(
+                    "{0} does not exist in your currect scene".format(jnt))
 
         self._originalJoints = value
 
@@ -72,7 +74,8 @@ class Ikfk(object):
 
         for jnt in value:
             if not cmds.objExists(jnt):
-                raise RuntineError("{0} does not exist in your currect scene".format(jnt))
+                raise RuntineError(
+                    "{0} does not exist in your currect scene".format(jnt))
 
         self._fkJoints = value
 
@@ -82,7 +85,8 @@ class Ikfk(object):
 
         for jnt in value:
             if not cmds.objExists(jnt):
-                raise RuntineError("{0} does not exist in your currect scene".format(jnt))
+                raise RuntineError(
+                    "{0} does not exist in your currect scene".format(jnt))
 
         self._ikJoints = value
 
@@ -92,7 +96,8 @@ class Ikfk(object):
 
         for jnt in value:
             if not cmds.objExists(jnt):
-                raise RuntineError("{0} does not exist in your currect scene".format(jnt))
+                raise RuntineError(
+                    "{0} does not exist in your currect scene".format(jnt))
 
         self._blendJoints = value
 
@@ -101,7 +106,8 @@ class Ikfk(object):
             raise TypeError("{0} is not of type str or unicode.".format(value))
 
         if not cmds.objExists(value):
-            raise RuntimeError("{0} does not exist in your currecnt scene".formant(value))
+            raise RuntimeError(
+                "{0} does not exist in your currecnt scene".formant(value))
 
         self._group = value
 
@@ -122,7 +128,8 @@ class Ikfk(object):
         fkJnts = list()
         for jnt in self.getOriginalJoints():
             cmds.select(cl=True)
-            fkJnt = wrappers.duplicateJoint(jnt, "{0}_fk".format(jnt.replace(nameSpace.BINDJOINT, nameSpace.JOINT)))
+            fkJnt = wrappers.duplicateJoint(jnt, "{0}_fk".format(
+                jnt.replace(nameSpace.BINDJOINT, nameSpace.JOINT)))
             cmds.parent(fkJnt.getName(), parent)
             fkJnts.append(fkJnt.getName())
             parent = fkJnt.getName()
@@ -134,7 +141,8 @@ class Ikfk(object):
         ikJnts = list()
         for jnt in self.getOriginalJoints():
             cmds.select(cl=True)
-            ikJnt = wrappers.duplicateJoint(jnt, "{0}_ik".format(jnt.replace(nameSpace.BINDJOINT, nameSpace.JOINT)))
+            ikJnt = wrappers.duplicateJoint(jnt, "{0}_ik".format(
+                jnt.replace(nameSpace.BINDJOINT, nameSpace.JOINT)))
             cmds.parent(ikJnt.getName(), parent)
             ikJnts.append(ikJnt.getName())
             parent = ikJnt.getName()
@@ -146,29 +154,42 @@ class Ikfk(object):
         blendJnts = list()
         for i, jnt in enumerate(self.getOriginalJoints()):
             cmds.select(cl=True)
-            blendJnt = wrappers.duplicateJoint(jnt, "{0}_blend".format(jnt.replace(nameSpace.BINDJOINT, nameSpace.JOINT)))
+            blendJnt = wrappers.duplicateJoint(jnt, "{0}_blend".format(
+                jnt.replace(nameSpace.BINDJOINT, nameSpace.JOINT)))
             # create blend nodes
-            bcTrnNode = cmds.createNode("blendColors", n="{0}_trnbcn".format(blendJnt.getName()))
-            bcRotNode = cmds.createNode("blendColors", n="{0}_rotbcn".format(blendJnt.getName()))
-            bcSclNode = cmds.createNode("blendColors", n="{0}_sclbcn".format(blendJnt.getName()))
+            bcTrnNode = cmds.createNode(
+                "blendColors", n="{0}_trnbcn".format(blendJnt.getName()))
+            bcRotNode = cmds.createNode(
+                "blendColors", n="{0}_rotbcn".format(blendJnt.getName()))
+            bcSclNode = cmds.createNode(
+                "blendColors", n="{0}_sclbcn".format(blendJnt.getName()))
 
             # translation
-            cmds.connectAttr('{0}.t'.format(self.getIkJoints()[i]), ('{0}.color1'.format(bcTrnNode)), f=True)
-            cmds.connectAttr('{0}.t'.format(self.getFkJoints()[i]), ('{0}.color2'.format(bcTrnNode)), f=True)
+            cmds.connectAttr('{0}.t'.format(self.getIkJoints()[
+                             i]), ('{0}.color1'.format(bcTrnNode)), f=True)
+            cmds.connectAttr('{0}.t'.format(self.getFkJoints()[
+                             i]), ('{0}.color2'.format(bcTrnNode)), f=True)
 
             # rotation
-            cmds.connectAttr('{0}.r'.format(self.getIkJoints()[i]), ('{0}.color1'.format(bcRotNode)), f=True)
-            cmds.connectAttr('{0}.r'.format(self.getFkJoints()[i]), ('{0}.color2'.format(bcRotNode)), f=True)
+            cmds.connectAttr('{0}.r'.format(self.getIkJoints()[
+                             i]), ('{0}.color1'.format(bcRotNode)), f=True)
+            cmds.connectAttr('{0}.r'.format(self.getFkJoints()[
+                             i]), ('{0}.color2'.format(bcRotNode)), f=True)
 
             # scale
-            cmds.connectAttr('{0}.s'.format(self.getIkJoints()[i]), ('{0}.color1'.format(bcSclNode)), f=True)
-            cmds.connectAttr('{0}.s'.format(self.getFkJoints()[i]), ('{0}.color2'.format(bcSclNode)), f=True)
+            cmds.connectAttr('{0}.s'.format(self.getIkJoints()[
+                             i]), ('{0}.color1'.format(bcSclNode)), f=True)
+            cmds.connectAttr('{0}.s'.format(self.getFkJoints()[
+                             i]), ('{0}.color2'.format(bcSclNode)), f=True)
 
             cmds.parent(blendJnt.getName(), parent)
 
-            cmds.connectAttr('{0}.output'.format(bcTrnNode), '{0}.t'.format(blendJnt.getName(), f=True))
-            cmds.connectAttr('{0}.output'.format(bcRotNode), '{0}.r'.format(blendJnt.getName(), f=True))
-            cmds.connectAttr('{0}.output'.format(bcSclNode), '{0}.s'.format(blendJnt.getName(), f=True))
+            cmds.connectAttr('{0}.output'.format(bcTrnNode),
+                             '{0}.t'.format(blendJnt.getName(), f=True))
+            cmds.connectAttr('{0}.output'.format(bcRotNode),
+                             '{0}.r'.format(blendJnt.getName(), f=True))
+            cmds.connectAttr('{0}.output'.format(bcSclNode),
+                             '{0}.s'.format(blendJnt.getName(), f=True))
 
             # connect IKFK attribute to blend colors
             cmds.connectAttr(ikfkAttr, "{0}.blender".format(bcTrnNode), f=True)
@@ -197,10 +218,12 @@ class Ikfk(object):
         cmds.connectAttr("{0}.scale".format(self.getBlendJoints()[2]),"{0}.scale".format(self.getOriginalJoints()[2]))
         '''
 
-    # This is a decorator. it pulls this out of the method even though it's in it
+    # This is a decorator. it pulls this out of the method even though it's in
+    # it
     @staticmethod
     def createIkHandle(name, startJoint, endJoint, _type='ikRPsolver'):
-        ikHandle = cmds.ikHandle(n=name, sj=startJoint, ee=endJoint, sol=_type)[0]
+        ikHandle = cmds.ikHandle(
+            n=name, sj=startJoint, ee=endJoint, sol=_type)[0]
         return ikHandle
 
 
@@ -208,7 +231,8 @@ class LimbIkFk(Ikfk):
     # *args takes in a list, and **kwargs a dictionary
     def __init__(self, originalJoints):
         if not len(originalJoints) == 3:
-            raise RuntimeError("{0} must contain only 3 joints".format(originalJoints))
+            raise RuntimeError(
+                "{0} must contain only 3 joints".format(originalJoints))
         super(LimbIkFk, self).__init__(originalJoints)
 
         self._ikHandle = str()
@@ -216,9 +240,12 @@ class LimbIkFk(Ikfk):
     def getPoleVectorPosition(self, distance=3):
         # position
         origJoints = self.getOriginalJoints()
-        startJntPos = cmds.xform(self.getOriginalJoints()[0], q=True, ws=True, t=True)
-        middleJntPos = cmds.xform(self.getOriginalJoints()[1], q=True, ws=True, t=True)
-        endJntPos = cmds.xform(self.getOriginalJoints()[2], q=True, ws=True, t=True)
+        startJntPos = cmds.xform(self.getOriginalJoints()[
+                                 0], q=True, ws=True, t=True)
+        middleJntPos = cmds.xform(self.getOriginalJoints()[
+                                  1], q=True, ws=True, t=True)
+        endJntPos = cmds.xform(self.getOriginalJoints()[
+                               2], q=True, ws=True, t=True)
 
         print self.getOriginalJoints()[0]
 
@@ -236,5 +263,5 @@ class LimbIkFk(Ikfk):
     def create(self):
         super(LimbIkFk, self).create()
         ikJoints = self.getIkJoints()
-        self.setHandle(self.createIkHandle("{0}_{1}".format(ikJoints[-1], nameSpace.HANDLE), ikJoints[0], ikJoints[-1]))
-
+        self.setHandle(self.createIkHandle("{0}_{1}".format(
+            ikJoints[-1], nameSpace.HANDLE), ikJoints[0], ikJoints[-1]))

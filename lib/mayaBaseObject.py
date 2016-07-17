@@ -123,24 +123,35 @@ class MayaBaseObject(object):
             raise RuntimeError(
                 "{0} does not exist in your current scene".format(value))
 
-        parent = cmds.listRelatives(self.getName(), p=True)[0]
-
+        parent = cmds.listRelatives(self.getName(), p=True)[0] or []
         child = self.getName()
 
-        if not parent:
+        if not len(parent):
             cmds.parent(child, value)
+
         # ! a node may have 2 zeros above it. Change this func later so
         # we can parent the topNode. At the moment this code only parents 1
         # above.
-        elif parent:
+
+        # ^ i added small function to take care of this
+        # and make it flexible enough for other stuff
+
+        else:
+            parent = self.checkParent(parent, nameSpace.ZERO)
             cmds.parent(parent, value)
 
         self._parent = value
 
-    def setPosition(self, value):
-        self.position = tuple(value)
-        cmds.xform(self.getName(), ws=True, t=self.position)
+    def checkParent(self, obj, nameType):
+        # returns parent if it matches nameType
+        par = cmds.listRelatives(obj, p=True)[0] or []
+        par = par if len(par) and par[0].endswith(nameType) else []
+        return obj if len(obj) else par
 
-    def setRotation(self, value):
+    def setPosition(self, value, world=True):
+        self.position = tuple(value)
+        cmds.xform(self.getName(), ws=world, t=self.position)
+
+    def setRotation(self, value, world=True):
         self.rotation = value
-        cmds.xform(self.long_name, ws=True, ro=self.rotation)
+        cmds.xform(self.long_name, ws=world, ro=self.rotation)
