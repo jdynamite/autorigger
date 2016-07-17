@@ -21,6 +21,7 @@ class Control(mayaBaseObject.MayaBaseObject):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     def __init__(self, name=None, align_to=None, shape=None):
         super(Control, self).__init__(name)
 
@@ -49,6 +50,18 @@ class Control(mayaBaseObject.MayaBaseObject):
         '''
 =======
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+=======
+    @classmethod
+    def write_curves_to(path):
+        pass
+
+    def __init__(self, name="control", side="", align_to="world", shape="circle", parent="None"):
+        super(Control, self).__init__(name=name, side=side, nameType = nameSpace.CONTROL, parent=parent)
+
+        self.align_to = align_to
+        self.shape = shape
+
+>>>>>>> origin/master
         if cmds.objExists("%s.isControl" % (self.long_name)):
             self.pop_control_attributes()
 
@@ -185,6 +198,7 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     # I can make this happen l8r by making this a classmethod of mayaBaseObject
     # or just a method of mayaBaseObject -juan
+<<<<<<< HEAD
 
     def zero_out(self):
 
@@ -193,6 +207,12 @@ class Control(mayaBaseObject.MayaBaseObject):
 =======
         null = self.long_name.replace(nameSpace.CONTROL, nameSpace.NULL)
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+=======
+
+    def zero_out(self):
+
+        null = self.long_name.replace(nameSpace.CONTROL, nameSpace.NULL)
+>>>>>>> origin/master
         self.null = cmds.duplicate(
             self.long_name,
             rc=True,
@@ -250,6 +270,7 @@ class Control(mayaBaseObject.MayaBaseObject):
 
 class Guide(Control):
 <<<<<<< HEAD
+<<<<<<< HEAD
     def __init__(self,name,position=(0,0,0),parent=None):
         super(Guide,self).__init__(name,position,parent)
         self.position = position
@@ -280,6 +301,12 @@ class Guide(Control):
             cmds.parent( null, self.getParent())
 
 =======
+=======
+
+    def __init__(self, name, side, position=(0, 0, 0), parent=None):
+        super(Guide, self).__init__(name, side, position, parent)
+
+>>>>>>> origin/master
     def create(self):
         pass
         '''
@@ -294,5 +321,9 @@ class Guide(Control):
         cmds.xform(zeroGroup1, ws=True, t=self.position)
         if self.getParent():
             cmds.parent(self.getZeroGroup1(), self.getParent())
+<<<<<<< HEAD
         '''
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
+=======
+        '''
+>>>>>>> origin/master
