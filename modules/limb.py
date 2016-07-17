@@ -16,6 +16,7 @@ from autorigger.lib import ribbon
 from autorigger.lib import curve
 from autorigger.lib import noRoll
 from autorigger.lib import spline
+from autorigger.lib import util
 reload(part)
 reload(joint)
 reload(control)
@@ -35,7 +36,6 @@ class Limb(part.Part):
 
         #this is just strings of joint names
         self.startJoint = joint.Joint("{0}_upLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
-        print self.startJoint.getName()
         self.middleJoint = joint.Joint("{0}_loLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
         self.endJoint = joint.Joint("{0}_endLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
 
@@ -47,6 +47,9 @@ class Limb(part.Part):
 
         self.mirror = mirror
 
+        #load necessary plugins
+        util.isPluginLoaded('matrixNodes')
+
     def setup(self):
         super(Limb,self).setup()
 
@@ -55,11 +58,12 @@ class Limb(part.Part):
         parent = self.skeletonGroup
 
         jntPositions = list()
-        if self.getSide() == nameSpace.SIDES["left"]:
+        if self.getSide() == nameSpace.LEFT:
             jntPositions = ([1,0,0],[4.5,0,-0.5],[8,0,0])
 
-        elif self.getSide() == nameSpace.SIDES["right"]:
+        elif self.getSide() == nameSpace.RIGHT:
             jntPositions = ([-1,0,0],[-4.5,0,-0.5],[-8,0,0])
+
 
         #this builds and names the bind joints
         self.guides = list()
@@ -70,10 +74,10 @@ class Limb(part.Part):
             jnt.setParent(parent)
             self.guides.append(
                 self.createGuide(
-                    jnt.getName().replace(nameSpace.BINDJOINT,nameSpace.GUIDE),
-                    jnt.getName(),
-                    jnt.getPosition(),
-                    self.masterGuide.getName()
+                    name = jnt.getName().replace(nameSpace.BINDJOINT,nameSpace.GUIDE),
+                    jnt = jnt.getName(),
+                    position = jnt.getPosition(),
+                    parent = self.guidesGroup
                     )
             )
             parent = jnt.getName()

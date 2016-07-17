@@ -3,9 +3,9 @@ import sys
 import os
 import maya.cmds as cmds
 import curve as animCurve
-import RigTools.libs.name as animName
+from autorigger.lib import nameSpace
 reload(animCurve)
-reload(animName)
+reload(nameSpace)
 
 
 def dump(data):

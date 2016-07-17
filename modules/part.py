@@ -21,6 +21,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.name = name
         # base position of the partRig
         self.position = position
+        self.color = 0
 
         self.group = "{0}_master_{1}".format(name, nameSpace.GROUP)
         self.jointsGroup = "{0}_joints_{1}".format(name, nameSpace.GROUP)
@@ -55,6 +56,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         cmds.parent(self.skeletonGroup, self.setupGroup)
         cmds.parent(self.guidesGroup, self.setupGroup)
 
+        self.masterGuide.create()
         self.masterGuide.setParent(self.guidesGroup)
 
     def postSetup(self):
@@ -99,7 +101,7 @@ class Part(mayaBaseObject.MayaBaseObject):
 
     def createGuide(self, name, jnt, position=(0, 0, 0), parent=None):
         guide = control.Guide(name, position, parent)
-        # guide.create()
+        guide.create()
         guide.setColor(self.getColor())
         # [0] because i think constriants returns 2 in a variable
         # just like how polygons get returned in an array in mel thanks to shape

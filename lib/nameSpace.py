@@ -40,6 +40,8 @@ MULTIPLYDIVIDE = "MDN"
 CONDITION = "CND"
 PLUSMINUSAVG = "PMA"
 REVERSE = "RVR"
+DCM = "DCM"
+VCP = "VCP"
 
 #template of how names get input
 NAMETEMPLATE = "side.location.description.number.type"
@@ -55,6 +57,11 @@ def getSide(name):
     splitName = name.split(DELIMITER)
 
     if splitName:
-        return splitName[0]
+
+        # if not L_, R_, or C_
+        if (splitName[0] == RIGHT) or (splitName[0] == LEFT) or (splitName[0] == CENTER):
+            return splitName[0]
+        else:
+            raise RunTimeError("NAME input must start with a side prefix of 'L_', 'R_', or 'C_' ! " )
 
     return None

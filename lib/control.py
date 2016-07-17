@@ -19,25 +19,16 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-    @classmethod
-    def read_curves_from(path):
-        pass
 
-    @classmethod
-    def write_curves_to(path):
-        pass
-
-    def __init__(self, name=None, side=None, align_to=None, shape=None):
+    def __init__(self, name=None, align_to=None, shape=None):
         super(Control, self).__init__(name)
-        self.name = name
-        self.sanitize_name()
+
         self.nameType = nameSpace.CONTROL
+        self.name = name
 
         self.color = "yellow"
 
-        if side is None:
-            side = ""
-        self.side = side
+        self.side = nameSpace.getSide(name)
 
         if align_to is None:
             align_to = "world"
@@ -47,23 +38,26 @@ class Control(mayaBaseObject.MayaBaseObject):
             shape = "circle"
         self.shape = shape
 
-        self.format_name()
-
+        '''
         if cmds.objExists("%s.isControl" % (self.long_name)):
             self.pop_control_attributes()
 
         else:
             self.create()
+        '''
+
+    def getNull(self):
+        return self.null
 
     def pop_control_attributes(self):
-        self.align_to = cmds.getAttr("%s.align_to" % self.long_name)
+        self.align_to = cmds.getAttr("%s.align_to" % self.name)
         self.side = cmds.getAttr("%s.side" % self.long_name)
         self.color = cmds.getAttr("%s.color" % self.long_name)
 
     # considering changing this to just .create()
     # much shorter and consistent
     def create(self):
-        self.long_name = cmds.createNode("transform", n=self.long_name)
+        self.long_name = cmds.createNode("transform", n=self.name)
         self.set_shape(self.shape)
 
         if cmds.objExists(self.align_to):
@@ -183,7 +177,7 @@ class Control(mayaBaseObject.MayaBaseObject):
         # super : zero -> null -> con
         # default : null -> con
 
-        null = self.long_name.replace(nameSpace.CONTROL, suffix)
+        null = self.name + "_" + suffix
         self.null = cmds.duplicate(
             self.long_name,
             rc=True,
@@ -240,17 +234,26 @@ class Control(mayaBaseObject.MayaBaseObject):
 class Guide(Control):
     def __init__(self,name,position=(0,0,0),parent=None):
         super(Guide,self).__init__(name,position,parent)
+        self.position = position
+        self.parent = parent
 
     def create(self):
 
-        ctrlName = self.long_name
-        zeroGroup1 = self._zeroGroup1
-        cmds.createNode("transform",n=zeroGroup1)
-
+        ctrlName = self.name
         guideShape = cmds.createNode("implicitSphere")
         cmds.rename(cmds.listRelatives(guideShape,p=True),ctrlName)
-        cmds.parent(ctrlName,zeroGroup1)
 
-        cmds.xform(zeroGroup1,ws=True, t=self.position)
+        #create guide nulls
+        null = cmds.createNode("transform", n=ctrlName+"_NULL")
+        cmds.parent(ctrlName, null)
+
+        #position null
+        self.setPosition(self.position)
+        #cmds.xform(null, ws=True, t=self.position)
+
+        print 'parent is {0}'.format( self.parent )
+
+        #insert into hierarchy accordingly
         if self.getParent():
-            cmds.parent(self.getZeroGroup1(), self.getParent())
+            cmds.parent( null, self.getParent())
+
