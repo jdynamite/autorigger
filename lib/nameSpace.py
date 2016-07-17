@@ -6,6 +6,9 @@
 Function: to change names in one place
 
 '''
+import os
+
+DIR = os.path.dirname(__file__)
 
 GROUP = "GRP"
 JOINT = "JNT"
@@ -29,11 +32,16 @@ LEFT = "L"
 CENTER = "C"
 SIDES = {"right":RIGHT, "left":LEFT, "center":CENTER}
 
+# colors
+COLORS = {"left": "blue", "right": "red", "center": "yellow", "default": "yellow"}
+COLOR_TO_INT = {"red" : 13, "blue": 6, "yellow": 17}
+
 # extensions
 WEIGHTSEXTENSION = ".skin"
 
 # paths
 WEIGHTSFOLDER = "weights"
+CONTROL_LIB_PATH = os.path.join(DIR, "controls.ctrl")
 
 # nodes
 MULTIPLYDIVIDE = "MDN"

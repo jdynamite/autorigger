@@ -11,3 +11,4 @@ import utils
 from lib.control import Control
 from rig import Rig, Switch, Module
 
+from lib import nameSpace

@@ -5,7 +5,10 @@ import maya.cmds as cmds
 import curve as animCurve
 from autorigger.lib import nameSpace
 reload(animCurve)
+<<<<<<< HEAD
 reload(nameSpace)
+=======
+>>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
 
 
 def dump(data):
@@ -26,21 +29,20 @@ def save(data, filepath):
 # load shapes from filepath
 def load(filepath):
 
-    f=open(filepath, "r")
+    f = open(filepath, "r")
     data = json.loads(f.read())
     f.close()
 
     return data
 
-
 def export():
     controlDict = {}
     for ctrl in cmds.ls(type="transform"):
-        shapes = cmds.listRelatives(ctrl,shapes=True,type="nurbsCurve")
+        shapes = cmds.listRelatives(ctrl, shapes=True, type="nurbsCurve")
         print shapes
         if shapes:
             controlDict[ctrl] = dict()
-            controlDict[ctrl]["shapes"]=dict()
+            controlDict[ctrl]["shapes"] = dict()
             for shape in shapes:
                 controlDict[ctrl]["shapes"][shape] = dict()
                 cvs = animCurve.getCVs(shape)
@@ -49,4 +51,4 @@ def export():
                 controlDict[ctrl]["shapes"][shape]["color"] = cmds.getAttr("{0}.overrideColor".format(shape))
                 controlDict[ctrl]["shapes"][shape]["degree"] = cmds.getAttr("{0}.degree".format(shape))
 
-    save(controlDict,animName.CONTROL_LIB_PATH)
+    save(controlDict,nameSpace.CONTROL_LIB_PATH)
