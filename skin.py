@@ -8,7 +8,7 @@ import maya.cmds as cmds
 from PySide import QtGui, QtCore
 from shiboken import wrapInstance
 
-from lib import nameSapce
+from autorigger.lib import nameSpace
 
 
 def show():
