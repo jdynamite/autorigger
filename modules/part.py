@@ -8,6 +8,7 @@ Modules will inherit mainly from this base Part Class
 '''
 
 import maya.cmds as cmds
+from autorigger.lib import util
 from autorigger.lib import nameSpace
 from autorigger.lib import mayaBaseObject
 from autorigger.lib import control
