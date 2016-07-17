@@ -13,7 +13,6 @@ reload(mbo)
 class Joint(mbo.MayaBaseObject):
 
 <<<<<<< HEAD
-<<<<<<< HEAD
     def __init__(self, name=None, position=(0,0,0), parent=None):
         super(Joint, self).__init__(name, position)
         self.nameType = nameSpace.JOINT
@@ -37,17 +36,6 @@ class Joint(mbo.MayaBaseObject):
         super(Joint, self).__init__(name=name, side=side, nameType=nameSpace.JOINT, position=position)
 
     def create(self):
-=======
-    def __init__(self, name="joint", side="", align_to="world", parent="None", position=[0,0,0]):
-
-        # since we are overloading init, it already goes through the \
-        # routines to self assign class variables such as self.name  \
-        # and self.side, etc
-
-        super(Joint, self).__init__(name=name, side=side, nameType=nameSpace.JOINT, position=position)
-
-    def create(self):
->>>>>>> origin/master
         cmds.joint(n=self.long_name)
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
 

@@ -18,7 +18,6 @@ reload(control)
 class Part(mayaBaseObject.MayaBaseObject):
 
 <<<<<<< HEAD
-<<<<<<< HEAD
     def __init__(self, name, position=[0,0,0]):
 
         self.name = name
@@ -34,8 +33,6 @@ class Part(mayaBaseObject.MayaBaseObject):
 
         self.nameType = nameSpace.GROUP
 =======
-=======
->>>>>>> origin/master
     def __init__(self, name, side, position=[0,0,0]):
         super(Part, self).__init__(name=name, side=side, position=position, nameType=nameSpace.GROUP)
         self.group = "{0}_master_{1}".format(self.long_name, nameSpace.GROUP)
@@ -43,10 +40,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.controlsGroup = "{0}_controls_{1}".format(self.long_name, nameSpace.GROUP)
         self.noXformGroup = "{0}_noXform_{1}".format(self.long_name, nameSpace.GROUP)
         self.hookGroup = "{0}_hook_{1}".format(self.long_name, nameSpace.GROUP)
-<<<<<<< HEAD
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
->>>>>>> origin/master
 
     def hookTo(self, hooker):
         pass
@@ -113,13 +107,10 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.postBuild()
 
 <<<<<<< HEAD
-<<<<<<< HEAD
     def createGuide(self, name, jnt, position=(0, 0, 0), parent=None):
         guide = control.Guide(name, position, parent)
         guide.create()
 =======
-=======
->>>>>>> origin/master
     def createGuide(self, name, side, jnt, position=(0, 0, 0), parent="world"):
         guide = control.Guide(name=name, position=position, side=side, parent=parent)
 

@@ -35,10 +35,15 @@ class Limb(part.Part):
         super(Limb, self).__init__(name=name, side=side)
 
         #this is just strings of joint names
+<<<<<<< HEAD
         self.startJoint = joint.Joint("{0}_upLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
         self.middleJoint = joint.Joint("{0}_loLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
         self.endJoint = joint.Joint("{0}_endLimb_{1}".format(self.getSide(),nameSpace.BINDJOINT))
-
+=======
+        self.startJoint = joint.Joint(name="upLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
+        self.middleJoint = joint.Joint(name="loLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
+        self.endJoint = joint.Joint(name="endLimb_{0}".format(nameSpace.BINDJOINT), side=self.getSide())
+>>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
 
         #this sets up the ribbon master group
         self.ribbonMasterGroup = "{0}_rbn_master_grp".format(self.getLongName())
@@ -76,11 +81,16 @@ class Limb(part.Part):
             self.guides.append(
                 self.createGuide(
                     name = jnt.getName().replace(nameSpace.BINDJOINT,nameSpace.GUIDE),
+<<<<<<< HEAD
                     jnt = jnt.getName(),
                     position = jnt.getPosition(),
                     parent = self.guidesGroup
-
-
+=======
+                    side = jnt.getSide(),
+                    jnt = jnt.getName(),
+                    position = jnt.getPosition(),
+                    parent = self.masterGuide.getName()
+>>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
                     )
             )
             parent = jnt.getName()

@@ -9,21 +9,15 @@ import nameSpace
 class MayaBaseObject(object):
 
 <<<<<<< HEAD
-<<<<<<< HEAD
 
     def __init__(self, name, position=(0, 0, 0), parent=None, nameType=None):
 =======
-=======
->>>>>>> origin/master
     kLeftPrefix = ["l", "lf", "l", "left", "L"]
     kRightPrefix = ["r", "rt", "right", "R"]
     kSidePrefix = kLeftPrefix + kRightPrefix
 
     def __init__(self, name="baseObject", side="", position=(0, 0, 0), parent="None", nameType=nameSpace.NULL):
-<<<<<<< HEAD
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
->>>>>>> origin/master
 
         self.name = name
         self.nameType = nameType
@@ -33,14 +27,10 @@ class MayaBaseObject(object):
         self.long_name = None
 
 <<<<<<< HEAD
-<<<<<<< HEAD
         self.side = nameSpace.getSide(self.name)
 =======
         self.format_name()
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
-        self.format_name()
->>>>>>> origin/master
 
     '''
     def sanitize_name(self):
@@ -65,7 +55,6 @@ class MayaBaseObject(object):
             return
 
 <<<<<<< HEAD
-<<<<<<< HEAD
 
         # remove alphanumeric characters from side
         #self.side = ''.join([i for i in self.side if i.isalpha()])
@@ -73,10 +62,6 @@ class MayaBaseObject(object):
         # removed this line since I changed how the formatting works
         # self.side = ''.join([i for i in self.side if i.isalpha()])
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
-        # removed this line since I changed how the formatting works
-        # self.side = ''.join([i for i in self.side if i.isalpha()])
->>>>>>> origin/master
 
         if self.side.lower() not in self.kSidePrefix:
             raise NotImplementedError("The input side is not a valid one.")
@@ -91,20 +76,14 @@ class MayaBaseObject(object):
             self.color = nameSpace.COLORS["right"]
 
 <<<<<<< HEAD
-<<<<<<< HEAD
         self.long_name = "_".join([self.side, self.name, self.nameType])
     '''
 =======
-=======
->>>>>>> origin/master
         self.long_name = nameSpace.DELIMITER.join([self.side, self.name, self.nameType])
 
     def getSide(self):
         return self.side
-<<<<<<< HEAD
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
->>>>>>> origin/master
 
     def getColor(self):
         return self.color
@@ -122,16 +101,11 @@ class MayaBaseObject(object):
         if not cmds.objExists(self.getName()):
             return self.position
 <<<<<<< HEAD
-<<<<<<< HEAD
         self._position = cmds.xform(self.getName(),q=True,ws=True,t=True)
 =======
         self._position = cmds.xform(
             self.getLongName(), q=True, ws=True, t=True)
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
-        self._position = cmds.xform(
-            self.getLongName(), q=True, ws=True, t=True)
->>>>>>> origin/master
         return self.position
 
     def getRotation(self):
@@ -140,21 +114,15 @@ class MayaBaseObject(object):
 
     def setColor(self, value):
 <<<<<<< HEAD
-<<<<<<< HEAD
         if not isinstance(value, int):
             raise TypeError("{0} must be an integer".format(value))
         attr = "{0}.overrideColor".format(self.getName())
 =======
-=======
->>>>>>> origin/master
 
         value = self.colorAsInt(value)
         attr = "{0}.overrideColor".format(self.getLongName())
 
-<<<<<<< HEAD
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
->>>>>>> origin/master
         if cmds.objExists(attr):
             cmds.setAttr("{0}.overrideEnabled".format(self.getName()), 1)
             cmds.setAttr(attr, value)
@@ -162,10 +130,7 @@ class MayaBaseObject(object):
         self.color = value
 
 <<<<<<< HEAD
-<<<<<<< HEAD
 =======
-=======
->>>>>>> origin/master
     def colorAsInt(self, value):
         if not isinstance(value, int):
             if isinstance(value, basestring) and value in nameSpace.COLOR_TO_INT.keys():
@@ -218,11 +183,8 @@ class MayaBaseObject(object):
                 "{0} does not exist in your current scene".format(value))
 
 <<<<<<< HEAD
-<<<<<<< HEAD
         parent = cmds.listRelatives(self.getName(), p=True)[0]
 =======
-=======
->>>>>>> origin/master
         print self.getLongName()
         parent = cmds.listRelatives(self.getLongName(), p=True)[0]
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
@@ -248,7 +210,6 @@ class MayaBaseObject(object):
         cmds.xform(self.long_name, ws=True, ro=self.rotation)
 
 <<<<<<< HEAD
-<<<<<<< HEAD
 
 
 
@@ -256,7 +217,3 @@ class MayaBaseObject(object):
     # def create(self):
     #    self.setGroup(cmds.createNode("transform", n="ikfk_grp"))
 >>>>>>> 756fdac1dcc3b0b59bab8ff200c0b3718af80efd
-=======
-    # def create(self):
-    #    self.setGroup(cmds.createNode("transform", n="ikfk_grp"))
->>>>>>> origin/master
