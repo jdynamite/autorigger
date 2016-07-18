@@ -125,7 +125,7 @@ class MayaBaseObject(object):
             raise RuntimeError(
                 "{0} does not exist in your current scene".format(value))
 
-        parent = cmds.listRelatives(value, p=True) or []
+        parent = cmds.listRelatives(self.getName(), p=True) or []
         child = self.getName()
 
         if not len(parent):
