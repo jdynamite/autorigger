@@ -1,10 +1,10 @@
 import maya.cmds as cmds
-from autorigger.rig import Switch
 from autorigger.lib import mayaBaseObject
 from autorigger.lib import jsonData
 from autorigger.lib import controlFilePath
 from autorigger.lib import curve as animCurve
 from autorigger.lib import nameSpace
+from autorigger.lib.util import Switch
 
 reload(mayaBaseObject)
 
@@ -19,23 +19,43 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-    def __init__(self, name=None, align_to=None, shape=None):
+    def __init__(self, name=None, align_to="world", shape="circle"):
         super(Control, self).__init__(name)
 
-        self.nameType = nameSpace.CONTROL
-        self.name = name
-
         self.color = "yellow"
-
+        self.nameType = nameSpace.CONTROL
         self.side = nameSpace.getSide(name)
 
-        if align_to is None:
-            align_to = "world"
-        self.align_to = align_to
+    @classmethod
+    def bulkCreate(cls, *args):
+        # returns the input as instances of the class
+        # list[jnt1, jnt2, jnt3] -> list[con(jnt1), con(jnt2), con(jnt3)]
+        # string -> con(string)
 
-        if shape is None:
-            shape = "circle"
-        self.shape = shape
+        result = []
+        for arg in args:
+            if type(arg) in [list, tuple]:
+                objects = [Control(name=obj) for obj in arg]
+                filter(lambda o: result.append(o), objects)
+            elif type(arg) == basestring:
+                result.append(Control(name=obj))
+        return result
+
+    @classmethod
+    def setColors(cls, objects, color):
+        if type(objects) not in [list, tuple]:
+            return
+        for o in objects:
+            if isinstance(o, Control):
+                o.set_color(color)
+
+    @classmethod
+    def setShapes(cls, objects, shape):
+        if type(objects) not in [list, tuple]:
+            return
+        for o in objects:
+            if isinstance(o, Control):
+                o.set_shape(shape)
 
     def getNull(self):
         return self.null
@@ -45,8 +65,6 @@ class Control(mayaBaseObject.MayaBaseObject):
         self.side = cmds.getAttr("%s.side" % self.long_name)
         self.color = cmds.getAttr("%s.color" % self.long_name)
 
-    # considering changing this to just .create()
-    # much shorter and consistent
     def create(self):
         self.long_name = cmds.createNode("transform", n=self.name)
         self.set_shape(self.shape)

@@ -19,46 +19,6 @@ class MayaBaseObject(object):
 
         self.side = nameSpace.getSide(self.name)
 
-    '''
-    def sanitize_name(self):
-        if self.name is None:
-            self.name = "control"
-
-        nameTypeWithUnderscore = "_{0}".format(self.nameType)
-        if nameTypeWithUnderscore in self.name:
-            self.name = self.name.replace(nameTypeWithUnderscore, "")
-
-        for side in self.kSidePrefix:
-            if self.name.startswith("%s_" % side):
-                self.name = "".join(self.name.split("_")[1:])
-
-
-    def format_name(self):
-
-        self.sanitize_name()
-
-
-        if not len(self.side):
-            self.long_name = "_".join([self.name, self.nameType])
-            return
-
-
-        # remove alphanumeric characters from side
-        #self.side = ''.join([i for i in self.side if i.isalpha()])
-
-        if self.side.lower() not in self.kSidePrefix:
-            raise NotImplementedError("The input side is not a valid one.")
-
-        # assert if resulting side is left or right
-
-        if self.side.lower() in self.kLeftPrefix:
-            self.color = "blue"
-        else:
-            self.color = "red"
-
-        self.long_name = "_".join([self.side, self.name, self.nameType])
-    '''
-
     def getColor(self):
         return self.color
 
@@ -100,11 +60,13 @@ class MayaBaseObject(object):
 
     def setOrientation(self, downAxis):
 
+        downAxis = downAxis.lower()
         correctInput = (downAxis == "x" or "y" or "z")
+
         # if downAxis input is not x, y, or z, raise RuntimeError
         if (not correctInput):
-            raise RuntimeError(
-                "setOrientation proc only takes in 'x', 'y', or 'z' CASE SENSITIVE")
+            err = "setOrientation proc only takes in 'x', 'y', or 'z' CASE SENSITIVE"
+            raise RuntimeError(err)
         else:
             if (downAxis == 'x'):
                 # select all CV

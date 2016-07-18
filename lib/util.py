@@ -11,6 +11,30 @@ import math
 # returns grp if it exists, otherwise creates the grp and returns it
 
 
+class Switch(object):
+    """
+    switch routine to mimic other languages switch
+    """
+
+    def __init__(self, value):
+        self.value = value
+        self.fall = False
+
+    def __iter__(self):
+        yield self.match
+        raise StopIteration
+
+    def match(self, *args):
+
+        if self.fall or not args:
+            return True
+        elif self.value in args:
+            self.fall = True
+            return True
+        else:
+            return False
+
+
 def getGroup(grp):
     if not isinstance(grp, basestring):
         raise RuntimeError("Pass a string puhleeze.")
@@ -59,11 +83,12 @@ def orthoOrient(*args):
     instances = [list, tuple, om.MVector, om.MPoint]
 
     if len(args) != 2:
-        raise RuntimeError("Must pass exactly two arguments.")
+        raise RuntimeError(
+            "Must pass exactly two arguments. An aim vector and an up vector.")
         return
 
     newArgs = []
-    for i, arg in enumerate(args):
+    for arg in args:
         if type(arg) in instances[:2]:
             if len(arg) == 3:
                 newArgs.append(om.MVector(arg[0], arg[1], arg[2]))
