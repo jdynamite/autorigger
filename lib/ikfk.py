@@ -2,6 +2,8 @@
 
 ik fk library for all ik fk setups
 
+wishlist: separate ik and fk procedures
+
 '''
 
 import maya.cmds as cmds

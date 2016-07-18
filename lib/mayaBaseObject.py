@@ -119,11 +119,13 @@ class MayaBaseObject(object):
                 cmds.rotate(90, 0, 0, r=True)
 
     def setParent(self, value):
+        print value
+
         if not cmds.objExists(value):
             raise RuntimeError(
                 "{0} does not exist in your current scene".format(value))
 
-        parent = cmds.listRelatives(self.getName(), p=True)[0] or []
+        parent = cmds.listRelatives(value, p=True) or []
         child = self.getName()
 
         if not len(parent):
@@ -137,16 +139,27 @@ class MayaBaseObject(object):
         # and make it flexible enough for other stuff
 
         else:
+            parent = parent[0]
             parent = self.checkParent(parent, nameSpace.ZERO)
             cmds.parent(parent, value)
 
-        self._parent = value
+        self.parent = value
 
     def checkParent(self, obj, nameType):
         # returns parent if it matches nameType
-        par = cmds.listRelatives(obj, p=True)[0] or []
-        par = par if len(par) and par[0].endswith(nameType) else []
-        return obj if len(obj) else par
+
+        if obj is None:
+            raise RuntimeError("Passed none to checkParent")
+            return
+
+        par = cmds.listRelatives(obj, p=True)
+
+        if par is None:
+            return obj
+
+        suffix = nameSpace.DELIMITER + nameType
+        par = par[0] if par[0].endswith(suffix) else obj
+        return par
 
     def setPosition(self, value, world=True):
         self.position = tuple(value)

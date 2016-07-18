@@ -1,2 +1,3 @@
 lib/controlFilePath.py
 **.pyc
+**/*.pyc

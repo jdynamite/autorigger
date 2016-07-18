@@ -20,14 +20,14 @@ FK = "FK"
 
 # joints
 BINDJOINT = "bindJNT"
-DRVJOINT =  "drvJNT"
+DRVJOINT = "drvJNT"
 SPLINE = "splineJNT"
 
 # sides
 RIGHT = "R"
 LEFT = "L"
 CENTER = "C"
-SIDES = {"right":RIGHT, "left":LEFT, "center":CENTER}
+SIDES = [LEFT, RIGHT, CENTER]
 
 # extensions
 WEIGHTSEXTENSION = ".skin"
@@ -43,25 +43,27 @@ REVERSE = "RVR"
 DCM = "DCM"
 VCP = "VCP"
 
-#template of how names get input
+# template of how names get input
 NAMETEMPLATE = "side.location.description.number.type"
 DELIMITER = "_"
+
 
 def getSide(name):
     '''
     Returns side of the name passed in.
     '''
-    if not DELIMITER in name:
-        raise RuntimeError("{0} must be part of name. {1}".format(DELIMITER,NAMETEMPLATE))
+    if DELIMITER not in name:
+        raise RuntimeError(
+            "{0} must be part of name. {1}".format(DELIMITER, NAMETEMPLATE))
 
-    splitName = name.split(DELIMITER)
+    # if not L_, R_, or C_
+    # expanded to accept suffixes _L
+    for side in SIDES:
+        if name.startswith(side + DELIMITER):
+            return side
+        elif name.endswith(DELIMITER + side):
+            return side
 
-    if splitName:
-
-        # if not L_, R_, or C_
-        if (splitName[0] == RIGHT) or (splitName[0] == LEFT) or (splitName[0] == CENTER):
-            return splitName[0]
-        else:
-            raise RunTimeError("NAME input must start with a side prefix of 'L_', 'R_', or 'C_' ! " )
-
+    raise RuntimeError(
+        "NAME input must start or end with {0}!".format(' or '.join(SIDES)))
     return None
