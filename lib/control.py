@@ -19,12 +19,15 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-    def __init__(self, name=None, align_to="world", shape="circle"):
-        super(Control, self).__init__(name)
+    def __init__(self, name=None, align_to="world", shape="circle", nameType=namespace.CONTROL):
+        super(Control, self).__init__(name=name, nameType=nameType)
 
         self.color = "yellow"
-        self.nameType = nameSpace.CONTROL
-        self.side = nameSpace.getSide(name)
+        self.shape = shape
+        self.align_to = align_to
+
+        if not self.name.endswith(nameSpace.DELIMITER + self.nameType):
+            self.name += nameSpace.DELIMITER + self.nameType
 
     @classmethod
     def bulkCreate(cls, *args):
@@ -62,45 +65,37 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     def pop_control_attributes(self):
         self.align_to = cmds.getAttr("%s.align_to" % self.name)
-        self.side = cmds.getAttr("%s.side" % self.long_name)
-        self.color = cmds.getAttr("%s.color" % self.long_name)
+        self.side = cmds.getAttr("%s.side" % self.name)
+        self.color = cmds.getAttr("%s.color" % self.name)
 
     def create(self):
-        self.long_name = cmds.createNode("transform", n=self.name)
+        self.name = cmds.createNode("transform", n=self.name)
         self.set_shape(self.shape)
 
         if cmds.objExists(self.align_to):
-            cmds.delete(cmds.parentConstraint(self.align_to, self.long_name))
+            cmds.delete(cmds.parentConstraint(
+                self.align_to, self.name, mo=False))
 
         # add some non-keyable attributes to the control
         attrs = {'side': self.side, 'alingTo': self.align_to,
                  'color': self.color, 'isControl': 'y'}
 
         for attr, value in attrs.iteritems():
-            cmds.addAttr(self.long_name, ln=attr, dt='string', k=False)
-            cmds.setAttr(".".join([self.long_name, attr]),
+            cmds.addAttr(self.name, ln=attr, dt='string', k=False)
+            cmds.setAttr(".".join([self.name, attr]),
                          value, type='string')
 
-        self.zero_out()
+        self.zero()
 
     def set_color(self, color):
         color_map = {"red": 13, "yellow": 17, "blue": 6}
 
-        shapes = cmds.listRelatives(self.long_name, c=True) or []
+        shapes = cmds.listRelatives(self.name, c=True) or []
 
         for shape in shapes:
             cmds.setAttr("%s.overrideEnabled" % shape, 1)
             if color in color_map:
                 cmds.setAttr("%s.overrideColor" % shape, color_map[color])
-
-    def set_parent(self, par):
-        self.parent = par
-        full_attr = ".".join([self.long_name, 'parent'])
-
-        if not cmds.objExists(full_attr):
-            cmds.addAttr(self.long_name, ln='parent', dt='string', k=False)
-
-        cmds.setAttr(full_attr, par)
 
     def set_shape(self, shape):
 
@@ -128,37 +123,39 @@ class Control(mayaBaseObject.MayaBaseObject):
     def mirror(self):
         # look for a mirror control object on the other side
 
-        side_lower = self.side.lower()
-        other_side = ""
+        sideLower = self.side.lower()
+        otherSide = ""
         align_to = ""
 
         mirror_map_left = {"left": "right", "lf": "rt", "l": "r"}
         mirror_map_right = {"right": "left", "rt": "lf", "r": "l"}
 
-        if side_lower in mirror_map_left.keys():
-            other_side = list(mirror_map_left[side_lower])
+        if sideLower in mirror_map_left.keys():
+            otherSide = list(mirror_map_left[sideLower])
 
-        elif side_lower in mirror_map_right.keys():
-            other_side = list(mirror_map_right[side_lower])
+        elif sideLower in mirror_map_right.keys():
+            otherSide = list(mirror_map_right[sideLower])
 
         for i, char in enumerate(self.side):
             if char.isupper():
-                other_side[i] = other_side[i].upper()
+                otherSide[i] = otherSide[i].upper()
 
-        if not len(other_side):
+        if not len(otherSide):
             raise RuntimeError("Could not find opposite side.")
 
-        other_side = "".join(other_side)
+        otherSide = "".join(otherSide)
 
         if cmds.objExists(self.align_to):
-            align_to = self.align_to.replace(self.side, other_side)
+            align_to = self.align_to.replace(self.side, otherSide)
         else:
             align_to = "world"
+
+        newName = self.name.replace(self.side, otherSide)
 
         # otherwise, create new control aligned to align_to
         # with same specs as self but different color
 
-        mirrored = Control(self.name, other_side, align_to, self.shape)
+        mirrored = Control(newName, align_to, self.shape)
 
         return mirrored
 
@@ -172,72 +169,46 @@ class Control(mayaBaseObject.MayaBaseObject):
         elif hasattr(self, 'null') and cmds.objExists(self.null):
             target = self.null
         else:
-            target = self.long_name
+            target = self.name
 
         cmds.xform(target, cp=True)
         temp_grp = cmds.group(em=True, n='temp_grp_1')
         cmds.delete(cmds.pointConstraint(temp_grp, target))
         cmds.delete(temp_grp)
 
-    # note: change this to work on not just controls. like it takes in an
-    # input of what to zero out
-    def zero_out(self, suffix=nameSpace.NULL, method="default"):
-
-        # super : zero -> null -> con
-        # default : null -> con
-
-        null = self.name + "_" + suffix
-        self.null = cmds.duplicate(
-            self.long_name,
-            rc=True,
-            n=null)[0]
-
-        # delete children
-        cmds.delete(cmds.listRelatives(self.null, ad=True))
-        cmds.parent(self.long_name, self.null)
-
-        if method == "super":
-            zero = self.long_name.replace(nameSpace.CONTROL, nameSpace.ZERO)
-            self.zero = cmds.duplicate(self.long_name, rc=True,
-                                       n=zero)[0]
-
-            # delete children
-            cmds.delete(cmds.listRelatives(self.zero, ad=True))
-            cmds.parent(self.null, self.zero)
-
     def get_shape_from(self, obj):
 
         obj = cmds.duplicate(obj, rc=True)
 
-        cmds.parent(obj, self.long_name)
+        cmds.parent(obj, self.name)
         cmds.makeIdentity(obj, apply=True, t=1, s=1, r=1)
         obj_shapes = cmds.listRelatives(obj, s=True)
 
         for shape in obj_shapes:
-            cmds.parent(shape, self.long_name, r=True, s=True)
-            cmds.rename(shape, "%sShape" % self.long_name)
+            cmds.parent(shape, self.name, r=True, s=True)
+            cmds.rename(shape, "%sShape" % self.name)
 
         self.set_color(self.color)
         cmds.delete(obj)
 
-    def drive_constrained(self, obj, p=True, r=True, s=False, o=False):
+    def drive_constrained(self, obj, p=False, r=False, s=False, o=False):
         if not cmds.objExists(obj):
             return
         if s:
-            cmds.scaleConstraint(self.long_name, obj, mo=o)
+            cmds.scaleConstraint(self.name, obj, mo=o)
 
         if p and r:
-            cmds.parentConstraint(self.long_name, obj, mo=o)
+            cmds.parentConstraint(self.name, obj, mo=o)
 
         elif p and not r:
-            cmds.pointConstraint(self.long_name, obj, mo=o)
+            cmds.pointConstraint(self.name, obj, mo=o)
 
         elif r and not p:
-            cmds.orientConstraint(self.long_name, obj, mo=o)
+            cmds.orientConstraint(self.name, obj, mo=o)
 
     def drive_parented(self, obj):
         if cmds.objExists(obj):
-            cmds.parent(obj, self.long_name)
+            cmds.parent(obj, self.name)
 
 
 class Guide(Control):

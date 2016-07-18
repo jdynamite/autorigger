@@ -8,15 +8,12 @@ import nameSpace
 
 class MayaBaseObject(object):
 
-    def __init__(self, name, position=(0, 0, 0), parent=None, nameType=None):
+    def __init__(self, name, position=(0, 0, 0), parent=None, nameType=nameSpace.NULL):
 
         self.name = name
         self.nameType = nameType
-
         self.position = position
         self.parent = parent
-        self.long_name = None
-
         self.side = nameSpace.getSide(self.name)
 
     def getColor(self):
@@ -26,9 +23,6 @@ class MayaBaseObject(object):
         return self.name
 
     def getParent(self):
-        #parent = cmds.listRelatives(self.getName(), p=True)
-        # if parent:
-        #    self.setParent(parent[0])
         return self.parent
 
     def getPosition(self):
@@ -38,7 +32,7 @@ class MayaBaseObject(object):
         return self.position
 
     def getRotation(self):
-        self.rotation = cmds.xform(self.long_name, q=True, ws=True, ro=True)
+        self.rotation = cmds.xform(self.getName(), q=True, ws=True, ro=True)
         return self.rotation
 
     def setColor(self, value):
@@ -50,22 +44,13 @@ class MayaBaseObject(object):
             cmds.setAttr(attr, value)
         self.color = value
 
-    def setLongName(self, value):
-
-        # if isinstance is not none
-        if not isinstance(value, basestring):
-            raise TypeError("{)} is not of type str or unicode.".format(value))
-        # cmds.rename( self.getName(), value )
-        self.long_name = value
-
     def setOrientation(self, downAxis):
 
         downAxis = downAxis.lower()
-        correctInput = (downAxis == "x" or "y" or "z")
 
         # if downAxis input is not x, y, or z, raise RuntimeError
-        if (not correctInput):
-            err = "setOrientation proc only takes in 'x', 'y', or 'z' CASE SENSITIVE"
+        if downAxis not in ['x', 'y', 'z']:
+            err = "setOrientation proc only takes in 'x' | 'y' | 'z'"
             raise RuntimeError(err)
         else:
             if (downAxis == 'x'):
@@ -81,24 +66,16 @@ class MayaBaseObject(object):
                 cmds.rotate(90, 0, 0, r=True)
 
     def setParent(self, value):
-        print value
-
         if not cmds.objExists(value):
-            raise RuntimeError(
-                "{0} does not exist in your current scene".format(value))
+            err = "{0} does not exist in your current scene."
+            raise RuntimeWarning(err.format(value))
+            return
 
         parent = cmds.listRelatives(self.getName(), p=True) or []
         child = self.getName()
 
         if not len(parent):
             cmds.parent(child, value)
-
-        # ! a node may have 2 zeros above it. Change this func later so
-        # we can parent the topNode. At the moment this code only parents 1
-        # above.
-
-        # ^ i added small function to take care of this
-        # and make it flexible enough for other stuff
 
         else:
             parent = parent[0]
@@ -108,7 +85,7 @@ class MayaBaseObject(object):
         self.parent = value
 
     def checkParent(self, obj, nameType):
-        # returns parent if it matches nameType
+        # returns parent if parent matches nameType
 
         if obj is None:
             raise RuntimeError("Passed none to checkParent")
@@ -129,4 +106,16 @@ class MayaBaseObject(object):
 
     def setRotation(self, value, world=True):
         self.rotation = value
-        cmds.xform(self.long_name, ws=world, ro=self.rotation)
+        cmds.xform(self.getName(), ws=world, ro=self.rotation)
+
+    def zero(self):
+        null = self.name.strip(self.nameType)
+        null += nameSpace.DELIMITER + nameSpace.NULL
+        self.null = cmds.duplicate(
+            self.name,
+            rc=True,
+            n=null)[0]
+
+        # delete children
+        cmds.delete(cmds.listRelatives(self.null, ad=True))
+        cmds.parent(self.name, self.null)

@@ -9,6 +9,7 @@ import maya.api.OpenMaya as om
 import mayaBaseObject as mbo
 import nameSpace
 import util
+import control
 
 reload(mbo)
 
@@ -41,3 +42,30 @@ class Joint(mbo.MayaBaseObject):
             a = "First arg should be xyz|yzx|zxy|zyx|yxz|xzy|none."
             b = " Second arg should be xup|xdown|yup|ydown|zup|zdown|none."
             return RuntimeWarning(a + b)
+
+    @classmethod
+    def fkChain(cls, joints):
+
+        # given some joints, creates a very primitive FK chain
+
+        if not isinstance(joints, list):
+            err = "Could not create an fkChain out of {0} because it's not a list."
+            raise RuntimeError(err.format(joints))
+            return
+
+        joints = [j for j in joints if cmds.nodeType(j) == 'joint']
+        cons = []
+        par = None
+
+        for j in joints:
+            con = control.Control(name=j, align_to=j)
+            con.create()
+
+            if par is not None:
+                con.setParent(par.getName())
+
+            con.drive_parented(j)
+            cons.append(con)
+            par = con
+
+        return cons
