@@ -47,6 +47,7 @@ class Joint(mbo.MayaBaseObject):
     def fkChain(cls, joints):
 
         # given some joints, creates a very primitive FK chain
+        # returns list of controls for chain as Control instances
 
         if not isinstance(joints, list):
             err = "Could not create an fkChain out of {0} because it's not a list."
