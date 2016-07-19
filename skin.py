@@ -349,7 +349,7 @@ class SkinCluster(object):
             self.data[attr] = cmds.getAttr(
                 "{}.{}".format(self.skin_cluster, attr))
 
-        self.data[name] = self.skin_cluster
+        self.data['name'] = self.skin_cluster
 
     def _get_components(self):
         """
