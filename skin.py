@@ -235,7 +235,9 @@ class SkinCluster(object):
 
     @classmethod
     def get_default_path(cls):
-        wd = cmds.workspace(q=True, dir=True)
+        sceneName = cmds.file(q=True, sceneName=True, shortName=True)
+        wd = cmds.file(q=True, sceneName=True)
+        wd = wd.strip(sceneName)
         return wd + cls.kWeightsFolder + '/'
 
     @classmethod
