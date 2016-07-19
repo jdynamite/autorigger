@@ -109,7 +109,7 @@ class MayaBaseObject(object):
         cmds.xform(self.getName(), ws=world, ro=self.rotation)
 
     def zero(self):
-        null = self.name.strip(self.nameType)
+        null = self.name.strip(nameSpace.DELIMITER + self.nameType)
         null += nameSpace.DELIMITER + nameSpace.NULL
         self.null = cmds.duplicate(
             self.name,

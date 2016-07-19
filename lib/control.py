@@ -67,9 +67,9 @@ class Control(mayaBaseObject.MayaBaseObject):
         return self.null
 
     def pop_control_attributes(self):
-        self.align_to = cmds.getAttr("%s.alignTo" % self.name)
+        self.align_to = cmds.getAttr("%s.alignTo" % self.name) or 'world'
         self.side = cmds.getAttr("%s.side" % self.name)
-        self.color = cmds.getAttr("%s.color" % self.name)
+        self.color = cmds.getAttr("%s.color" % self.name) or 'yellow'
         parent = cmds.listRelatives(self.name, p=True, type="transform")
         null = [n for n in parent if n.endswith(nameSpace.NULL)]
         self.null = None if not len(null) else null[0]
@@ -82,11 +82,6 @@ class Control(mayaBaseObject.MayaBaseObject):
             return self
 
         self.name = cmds.createNode("transform", n=self.name)
-        self.set_shape(self.shape)
-
-        if cmds.objExists(self.align_to):
-            cmds.delete(cmds.parentConstraint(
-                self.align_to, self.name, mo=False))
 
         # add some non-keyable attributes to the control
         attrs = {'side': self.side, 'alignTo': self.align_to,
@@ -96,6 +91,12 @@ class Control(mayaBaseObject.MayaBaseObject):
             cmds.addAttr(self.name, ln=attr, dt='string', k=False)
             cmds.setAttr(".".join([self.name, attr]),
                          value, type='string')
+
+        self.set_shape(self.shape)
+
+        if cmds.objExists(self.align_to):
+            cmds.delete(cmds.parentConstraint(
+                self.align_to, self.name, mo=False))
 
         self.zero()
 
@@ -113,11 +114,12 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     def set_shape(self, shape):
 
+        self.shape = shape
+
         for case in Switch(shape):
             if case('circle'):
                 circle = cmds.circle(ch=False)[0]
-                self.get_shape_from(circle)
-                cmds.delete(circle)
+                self.get_shape_from(circle, destroy=True)
                 break
 
             else:
@@ -129,8 +131,8 @@ class Control(mayaBaseObject.MayaBaseObject):
                     degree = controlDict[self.shape]["shapes"][shape]["degree"]
                     # color = controlDict[self.shape]["shapes"][shape]["color"]
                     curve = animCurve.createFromPoints(
-                        positions, degree, self.name)
-                    self.get_shape_from(curve)
+                        positions, degree, self.name + "_temp")
+                    self.get_shape_from(curve, destroy=True)
 
     def mirror(self):
         # look for a mirror control object on the other side
@@ -184,21 +186,26 @@ class Control(mayaBaseObject.MayaBaseObject):
             target = self.name
 
         cmds.xform(target, cp=True)
-        temp_grp = cmds.group(em=True, n='temp_grp_1')
+        temp_grp = cmds.group(em=True, n='temp_grp_#')
         cmds.delete(cmds.pointConstraint(temp_grp, target))
         cmds.delete(temp_grp)
 
-    def get_shape_from(self, obj):
+    def get_shape_from(self, obj, destroy=True, deleteOld=True):
 
-        obj = cmds.duplicate(obj, rc=True)
+        if not destroy:
+            obj = cmds.duplicate(obj, rc=True, n="temp_shape_#")
+
+        if deleteOld:
+            oldShapes = cmds.listRelatives(self.name, s=True) or []
+            filter(lambda s: cmds.delete(s), oldShapes)
 
         cmds.parent(obj, self.name)
-        cmds.makeIdentity(obj, apply=True, t=1, s=1, r=1)
+        cmds.xform(obj, os=True, t=(0, 0, 0), ro=(0, 0, 0), s=(1, 1, 1))
         obj_shapes = cmds.listRelatives(obj, s=True)
 
         for shape in obj_shapes:
             cmds.parent(shape, self.name, r=True, s=True)
-            cmds.rename(shape, "%sShape" % self.name)
+            cmds.rename(shape, "%sShape#" % self.name)
 
         self.set_color(self.color)
         cmds.delete(obj)
