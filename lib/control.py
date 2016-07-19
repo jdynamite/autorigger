@@ -29,6 +29,9 @@ class Control(mayaBaseObject.MayaBaseObject):
         if not self.name.endswith(nameSpace.DELIMITER + self.nameType):
             self.name += nameSpace.DELIMITER + self.nameType
 
+        if cmds.objExists(self.name + ".isControl"):
+            self.pop_control_attributes()
+
     @classmethod
     def bulkCreate(cls, *args):
         # returns the input as instances of the class
@@ -64,11 +67,20 @@ class Control(mayaBaseObject.MayaBaseObject):
         return self.null
 
     def pop_control_attributes(self):
-        self.align_to = cmds.getAttr("%s.align_to" % self.name)
+        self.align_to = cmds.getAttr("%s.alignTo" % self.name)
         self.side = cmds.getAttr("%s.side" % self.name)
         self.color = cmds.getAttr("%s.color" % self.name)
+        parent = cmds.listRelatives(self.name, p=True, type="transform")
+        null = [n for n in parent if n.endswith(nameSpace.NULL)]
+        self.null = None if not len(null) else null[0]
 
     def create(self):
+
+        if cmds.objExists(self.name + ".isControl"):
+            err = "Object with the same name already exists and is a control."
+            raise RuntimeWarning(err)
+            return self
+
         self.name = cmds.createNode("transform", n=self.name)
         self.set_shape(self.shape)
 
@@ -77,7 +89,7 @@ class Control(mayaBaseObject.MayaBaseObject):
                 self.align_to, self.name, mo=False))
 
         # add some non-keyable attributes to the control
-        attrs = {'side': self.side, 'alingTo': self.align_to,
+        attrs = {'side': self.side, 'alignTo': self.align_to,
                  'color': self.color, 'isControl': 'y'}
 
         for attr, value in attrs.iteritems():
@@ -96,6 +108,8 @@ class Control(mayaBaseObject.MayaBaseObject):
             cmds.setAttr("%s.overrideEnabled" % shape, 1)
             if color in color_map:
                 cmds.setAttr("%s.overrideColor" % shape, color_map[color])
+                cmds.setAttr("%s.color" % self.name, color, type='string')
+                self.color = color
 
     def set_shape(self, shape):
 
@@ -116,9 +130,7 @@ class Control(mayaBaseObject.MayaBaseObject):
                     # color = controlDict[self.shape]["shapes"][shape]["color"]
                     curve = animCurve.createFromPoints(
                         positions, degree, self.name)
-
                     self.get_shape_from(curve)
-                    cmds.delete(curve)
 
     def mirror(self):
         # look for a mirror control object on the other side

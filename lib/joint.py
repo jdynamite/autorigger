@@ -50,7 +50,7 @@ class Joint(mbo.MayaBaseObject):
         # returns list of controls for chain as Control instances
 
         if not isinstance(joints, list):
-            err = "Could not create an fkChain out of {0} because it's not a list."
+            err = "Couldn't create a chain with {0} because it's not a list."
             raise RuntimeError(err.format(joints))
             return
 

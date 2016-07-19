@@ -53,8 +53,8 @@ def getSide(name):
     Returns side of the name passed in.
     '''
     if DELIMITER not in name:
-        raise RuntimeError(
-            "{0} must be part of name. {1}".format(DELIMITER, NAMETEMPLATE))
+        err = "{0} must be part of name. {1}"
+        raise RuntimeError(err.format(DELIMITER, NAMETEMPLATE))
 
     # if not L_, R_, or C_
     # expanded to accept suffixes _L
@@ -64,6 +64,6 @@ def getSide(name):
         elif name.endswith(DELIMITER + side):
             return side
 
-    raise RuntimeError(
-        "NAME input must start or end with {0}!".format(' or '.join(SIDES)))
+    err = "NAME input must start or end with {0}!"
+    raise RuntimeError(err.format(' or '.join(SIDES)))
     return None
