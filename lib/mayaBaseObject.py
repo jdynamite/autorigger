@@ -76,11 +76,14 @@ class MayaBaseObject(object):
 
         if not len(parent):
             cmds.parent(child, value)
+            print 'here i am'
 
         else:
             parent = parent[0]
             parent = self.checkParent(parent, nameSpace.ZERO)
             cmds.parent(parent, value)
+            print ' jk here i am'
+
 
         self.parent = value
 

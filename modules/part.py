@@ -33,6 +33,11 @@ class Part(mayaBaseObject.MayaBaseObject):
 
         self.nameType = nameSpace.GROUP
 
+        self.downAxis = 'x'
+        self.upAxis = 'y'
+
+        self.allJoints = []
+
     def hookTo(self, hooker):
         pass
 
@@ -66,7 +71,10 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.masterGuide.setParent(self.guidesGroup)
 
     def postSetup(self):
-        pass
+        #turn on LRA
+        #make sure to store joints created for setupRigs in self.allJoints
+        for joint in self.allJoints:
+            cmds.setAttr( "{0}.displayLocalAxis".format(joint), 1 )
 
     def runSetup(self):
         self.setup()
@@ -110,9 +118,16 @@ class Part(mayaBaseObject.MayaBaseObject):
         guide = control.Guide(name, position, parent)
         guide.create()
         guide.setColor(self.getColor())
-        # [0] because i think constriants returns 2 in a variable
-        # just like how polygons get returned in an array in mel thanks to
-        # shape
-        constraint = cmds.pointConstraint(name, jnt)[0]
+
+        print guide.getName()
+
+        constraint = cmds.pointConstraint(guide.getName(), jnt)[0]
         cmds.parent(constraint)
         return guide
+
+
+    def getDownAxis(self):
+        return self.downAxis
+
+    def getUpAxis(self):
+        return self.upAxis

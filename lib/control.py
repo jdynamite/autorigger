@@ -19,7 +19,7 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-    def __init__(self, name=None, align_to="world", shape="circle", nameType=nameSpace.CONTROL):
+    def __init__(self, name=None, position=(0,0,0),align_to="world", shape="circle", nameType=nameSpace.CONTROL):
         super(Control, self).__init__(name=name, nameType=nameType)
 
         self.color = "yellow"
