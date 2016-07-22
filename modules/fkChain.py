@@ -15,7 +15,7 @@ from autorigger.lib import curve
 from autorigger.lib import nameSpace
 
 reload(part)
-
+reload(nameSpace)
 '''
 import part as part
 import RigTools.libs.joint as joint
@@ -88,7 +88,7 @@ class FkChain(part.Part):
                     jnt.getName().replace(nameSpace.BINDJOINT, nameSpace.GUIDE),
                     jnt.getName(),
                     jnt.getPosition(),
-                    self.guidesGroup
+                    self.masterGuide.getName()
                 )
             )
 
@@ -163,10 +163,9 @@ class FkChain(part.Part):
 
             ii = i+1
             self.mainCtrls.append(
-                control.Control("{0}{1}_{2}1".format(
+                control.Control("{0}{1}_1".format(
                     self.getName(),
-                    str(ii),
-                    nameSpace.CONTROL ),
+                    str(ii) ),
                 position = joint.getPosition(),
                 shape='square')
             )
@@ -183,9 +182,16 @@ class FkChain(part.Part):
             #build subCtrl?
             if self.subCtrl :
 
-                subCtrls.append( control.Control("{0}{1}_{2}2".format(self.getName(), str(ii), nameSpace.CONTROL ),
-                                                     position = joint.getPosition(),
-                                                     shape='circle' ) )
+                subCtrls.append(
+                    control.Control(
+                        "{0}{1}_{2}".format(
+                            self.getName(),
+                            str(ii),
+                            nameSpace.SUBCONTROL
+                            ),
+                        position = joint.getPosition(),
+                        shape='circle' ) )
+
                 subCtrls[i].create()
                 subCtrls[i].setColor(26)
 
