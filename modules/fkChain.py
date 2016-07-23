@@ -227,7 +227,7 @@ class FkChain(part.Part):
     def postBuild(self):
         super(FkChain,self).postBuild()
 
-        pass
+
 
 
 
