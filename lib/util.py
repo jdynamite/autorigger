@@ -8,7 +8,6 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om
 import math
 
-# returns grp if it exists, otherwise creates the grp and returns it
 
 
 class Switch(object):
@@ -34,6 +33,8 @@ class Switch(object):
         else:
             return False
 
+# returns grp if it exists, otherwise creates the grp and returns it
+
 
 def getGroup(grp):
     if not isinstance(grp, basestring):
@@ -42,8 +43,9 @@ def getGroup(grp):
 
     return grp if cmds.objExists(grp) else cmds.createNode("transform", n=grp)
 
-
 # checks if a plugin is loaded. If not it will attempt to load it
+
+
 def isPluginLoaded(plugin):
 
     checker = cmds.pluginInfo(plugin, query=True, l=True)
@@ -95,7 +97,6 @@ def orthoOrient(*args):
             else:
                 error = "Passed argument {0} is not of len 3."
                 raise RuntimeError(error.format(arg))
-                return
         elif type(arg) not in instances[2:]:
             error = "Passed argument {0} is of invalid type {1}."
             raise RuntimeError(error.format(arg, type(arg)))
@@ -124,3 +125,103 @@ def orthoOrient(*args):
     euler = matrixFn.rotation()
 
     return [math.degrees(euler.x), math.degrees(euler.y), math.degrees(euler.z)]
+
+
+def plugCheck(obj, plug):
+    if not cmds.objExists(obj):
+        raise RuntimeError("{0} doesn't exist.".format(obj))
+
+    if not cmds.attributeQuery(plug, node=obj, exists=True):
+        warn = "Couldn't find the attr {0} in {1}."
+        print warn.format(plug, obj)
+
+        plug = 'output' + plug[0].upper() + plug[1:]
+        if not cmds.attributeQuery(plug, node=obj, exists=True):
+            err = "Couldn't find the attr {0} in {1}."
+            raise RuntimeError(err.format(plug, obj))
+        else:
+            print "Using {0} instead.".format(plug)
+
+    return '.'.join([obj, plug])
+
+
+def subtract(a, b, plug="translate", name=None):
+
+    """
+    subtract b.plug from a.plug
+    returns plusMinusAverage
+    """
+
+    # determine which plug to use
+
+    objects = [a, b]
+    plugs = [plug, plug]
+
+    plugs = [plugCheck(obj, p) for obj, p in zip(objects, plugs)]
+
+    # create use general input (translate) or tx | ty | tz ?
+
+    useTriple = True
+
+    for p in plugs:
+        for axis in ["X", "Y", "Z"]:
+            if p.endswith(axis) or p.endswith(axis.lower()):
+                useTriple = False
+
+    name = name if name is not None else "plusMinusAverage#"
+    pma = cmds.createNode("plusMinusAverage", n=name)
+    cmds.setAttr("{0}.operation".format(pma), 2)
+    attrs = ["input3D[0]", "input3D[1]"] if useTriple else ["input3D[0].input3Dx", "input3D[1].input3Dx"]
+    inputs = ['.'.join([pma, attr]) for attr in attrs]
+
+    for p, input in zip(plugs, inputs):
+        cmds.connectAttr(p, input, f=True)
+
+    return pma
+
+
+def add(a, b, plug="translate", name=None):
+
+    """
+    add a and b with PMA if plug is not a component plug
+    """
+
+    # determine which plug to use
+
+    objects = [a, b]
+    plugs = [plug, plug]
+
+    plugs = [plugCheck(obj, p) for obj, p in zip(objects, plugs)]
+
+    # create PMA or doubleLinear ?
+
+    useTriple = True
+
+    for p in plugs:
+        for axis in ["X", "Y", "Z"]:
+            if p.endswith(axis) or p.endswith(axis.lower()):
+                useTriple = False
+
+    if useTriple:
+        name = name if name is not None else "plusMinusAverage#"
+        pma = cmds.createNode("plusMinusAverage", n=name)
+        attrs = ["input3D[0]", "input3D[1]"]
+        inputs = ['.'.join([pma, attr]) for attr in attrs]
+        for p, input in zip(plugs, inputs):
+            cmds.connectAttr(p, input, f=True)
+        return pma
+    else:
+        name = name if name is not None else "addDoubleLinear#"
+        adl = cmds.createNode("addDoubleLinear", n=name)
+        attrs = ["input1", "input2"]
+        inputs = ['.'.join([adl, attr]) for attr in attrs]
+        for p, input in zip(plugs, inputs):
+            cmds.connectAttr(p, input, f=True)
+        return adl
+
+def multiply(a, b):
+    pass
+
+def divide(a, b):
+    pass
+

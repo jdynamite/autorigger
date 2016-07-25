@@ -125,31 +125,25 @@ class Limb(part.Part):
         cmds.setAttr("{0}.operation".format(pma1), 2)
         cmds.setAttr("{0}.operation".format(pma2), 2)
 
-        # 3 decompose matrix nodes. one for each joint
-        dcmStart = cmds.createNode("decomposeMatrix", n="{0}_{1}".format(
-            self.startGuide.getName(), nameSpace.DCM))
-        dcmMiddle = cmds.createNode("decomposeMatrix", n="{0}_{1}".format(
-            self.middleGuide.getName(), nameSpace.DCM))
-        dcmEnd = cmds.createNode("decomposeMatrix", n="{0}_{1}".format(
-            self.endGuide.getName(), nameSpace.DCM))
-
-        cmds.connectAttr("{0}.worldMatrix[0]".format(self.startGuide.getName()), "{0}.inputMatrix".format(dcmStart),
-                         f=True)
-        cmds.connectAttr("{0}.worldMatrix[0]".format(self.middleGuide.getName()), "{0}.inputMatrix".format(dcmMiddle),
-                         f=True)
-        cmds.connectAttr("{0}.worldMatrix[0]".format(
-            self.endGuide.getName()), "{0}.inputMatrix".format(dcmEnd), f=True)
+        dcms = []
+        for guide in self.guides:
+            dcmName = nameSpace.DELIMITER.join([guide.getName(), nameSpace.DCM])
+            dcm = cmds.createNode("decomposeMatrix", n=dcmName)
+            guideMatrix = "{0}.worldMatrix[0]".format(guide.getName())
+            dcmInput = "{0}.inputMatrix".format(dcm)
+            cmds.connectAttr(guideMatrix, dcmInput, f=True)
+            dcms.append(dcm)
 
         # end is subtracted from start
         cmds.connectAttr("{0}.outputTranslate".format(
-            dcmEnd), "{0}.input3D[0]".format(pma1))
+            dcms[2]), "{0}.input3D[0]".format(pma1))
         cmds.connectAttr("{0}.outputTranslate".format(
-            dcmStart), "{0}.input3D[1]".format(pma1))
+            dcms[0]), "{0}.input3D[1]".format(pma1))
 
         cmds.connectAttr("{0}.outputTranslate".format(
-            dcmMiddle), "{0}.input3D[1]".format(pma2))
+            dcms[1]), "{0}.input3D[0]".format(pma2))
         cmds.connectAttr("{0}.outputTranslate".format(
-            dcmStart), "{0}.input3D[0]".format(pma2))
+            dcms[0]), "{0}.input3D[1]".format(pma2))
 
         # vcp is vector product
         vcp = cmds.createNode("vectorProduct", n="{0}_{1}".format(
