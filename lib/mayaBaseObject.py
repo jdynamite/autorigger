@@ -122,3 +122,6 @@ class MayaBaseObject(object):
         # delete children
         cmds.delete(cmds.listRelatives(self.null, ad=True))
         cmds.parent(self.name, self.null)
+
+        if cmds.objExists(self.parent):
+            cmds.parent(self.null, self.parent)

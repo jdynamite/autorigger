@@ -68,6 +68,9 @@ class Limb(part.Part):
         elif self.getSide() == nameSpace.RIGHT:
             jntPositions = ([-1, 0, 0], [-4.5, 0, -0.5], [-8, 0, 0])
 
+        elif self.getSide() == nameSpace.CENTER:
+            jntPositions = ([-1, 0, 0], [-4.5, 0, -0.5], [-8, 0, 0])
+
         # this builds and names the bind joints
         self.guides = list()
         for i, jnt in enumerate(jointList):
