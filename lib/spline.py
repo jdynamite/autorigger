@@ -1,4 +1,14 @@
-#Spline Class
+'''
+
+Spline Class
+
+-----------------
+This spline class will duplicate a joint chain and apply a spline IKH to the newly duplicated joint.
+So as of right now, you'll need to have a joint chain created in order to use run this module properly.
+This shouldn't be a problem since we're using this module as an addition to part rigs such as limb, spline, and neck.
+(possibly even tails in the future!)
+
+'''
 
 import maya.cmds as cmds
 from autorigger.lib import nameSpace
@@ -11,10 +21,20 @@ reload(control)
 reload(joint)
 reload(locator)
 
+
+
 class Spline(object) :
 
     def __init__( self, name, startJointDupe, endJointDupe, jointAmmount=7,
                   controlAmmount=3 ):
+
+        '''
+        :param name: name of spline
+        :param startJointDupe: name of the first joint in the joint chain to be duplicated
+        :param endJointDupe: name of the last joint in the joint chain to be duplicated
+        :param jointAmmount: ammount of joints in the 'to be duplicated' joint chain
+        :param controlAmmount: ammount of controls you'd like. Default is 3
+        '''
 
         self.name = name
         self.jointAmmount = jointAmmount
