@@ -12,6 +12,7 @@ from autorigger.lib import util
 from autorigger.lib import nameSpace
 from autorigger.lib import mayaBaseObject
 from autorigger.lib import control
+from autorigger.lib import util
 
 reload(control)
 
@@ -66,6 +67,9 @@ class Part(mayaBaseObject.MayaBaseObject):
 
         cmds.parent(self.skeletonGroup, self.setupGroup)
         cmds.parent(self.guidesGroup, self.setupGroup)
+
+        for grp in [self.group, self.jointsGroup, self.controlsGroup, self.noXformGroup, self.hookGroup]:
+            util.getGroup(grp)
 
         self.masterGuide.create()
         self.masterGuide.setParent(self.guidesGroup)

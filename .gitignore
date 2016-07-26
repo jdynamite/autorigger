@@ -2,3 +2,4 @@ lib/controlFilePath.py
 **.pyc
 **/*.pyc
 .idea/*
+.idea/

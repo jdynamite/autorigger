@@ -23,6 +23,8 @@ FK = "FK"
 BINDJOINT = "bindJNT"
 DRVJOINT = "drvJNT"
 SPLINE = "splineJNT"
+HANDLE = "ikHdl"
+POLEVECTOR = "pv"
 
 # sides
 RIGHT = "R"

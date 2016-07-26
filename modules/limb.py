@@ -187,6 +187,9 @@ class Limb(part.Part):
     def build(self):
         super(Limb, self).build()
 
+        self.strAimAttr = (cmds.getAttr("{0}.aim".format(
+            self.masterGuide.getName()), asString=True))
+
         self.ikfkSystem = ikfk.LimbIkFk([self.startJoint.getName(),
                                          self.middleJoint.getName(),
                                          self.endJoint.getName()])
@@ -253,7 +256,7 @@ class Limb(part.Part):
             fkCtrl.setColor(self.getColor())
             ctrlName = fkCtrl.getName()
             rot = cmds.xform(jnt, q=True, ws=True, ro=True)
-            cmds.xform(fkCtrl.getZeroGroup1(), ws=True, ro=rot)
+            cmds.xform(fkCtrl.null, ws=True, ro=rot)
             cmds.parentConstraint(ctrlName, jnt)
             cmds.scaleConstraint(ctrlName, jnt)
             parent = ctrlName
@@ -267,16 +270,16 @@ class Limb(part.Part):
         elbowCtrl.create()
         elbowCtrl.setColor(17)
         cmds.pointConstraint(self.ikfkSystem.getBlendJoints()[
-                             1], elbowCtrl.getZeroGroup1())
+                             1], elbowCtrl.null)
 
         # the high rotaiton values are causing flipping issues
         # so turn on the no flip
         cmds.orientConstraint(self.ikfkSystem.getBlendJoints()[0],
                               self.ikfkSystem.getBlendJoints()[1],
-                              elbowCtrl.getZeroGroup1())
+                              elbowCtrl.null)
 
         # parent to ctrl group
-        cmds.parent(elbowCtrl.getZeroGroup1(), self.controlsGroup)
+        cmds.parent(elbowCtrl.null, self.controlsGroup)
         # reorient CVs if need be
         curve.reorient(elbowCtrl.getName(), self.strAimAttr)
 
