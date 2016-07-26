@@ -25,6 +25,7 @@ class Control(mayaBaseObject.MayaBaseObject):
         self.color = "yellow"
         self.shape = shape
         self.align_to = align_to
+        self.position = position
 
         if not self.name.endswith(nameSpace.DELIMITER + self.nameType):
             self.name += nameSpace.DELIMITER + self.nameType
@@ -82,6 +83,7 @@ class Control(mayaBaseObject.MayaBaseObject):
             return self
 
         self.name = cmds.createNode("transform", n=self.name)
+        self.setPosition(self.position)
 
         # add some non-keyable attributes to the control
         attrs = {'side': self.side, 'alignTo': self.align_to,

@@ -36,6 +36,8 @@ class Spline(object) :
         :param controlAmmount: ammount of controls you'd like. Default is 3
         '''
 
+
+
         self.name = name
         self.jointAmmount = jointAmmount
         self.controlAmmount = controlAmmount
@@ -55,13 +57,13 @@ class Spline(object) :
         return self.endCtrl.getName()
 
     def getStartCtrlZero(self):
-        return self.startCtrl.getZeroGroup1()
+        return self.startCtrl.getNull()
 
     def getMidCtrlZero(self):
-        return self.midCtrl.getZeroGroup1()
+        return self.midCtrl.getNull()
 
     def getEndCtrlZero(self):
-        return self.endCtrl.getZeroGroup1()
+        return self.endCtrl.getNull()
 
     def getSplineIk(self):
         return self.ik
@@ -117,9 +119,6 @@ class Spline(object) :
         loc = cmds.spaceLocator(n='inbetweenSpaceLoc')[0]
         cmds.parentConstraint( startJoint, endJoint, loc )
         halfway = cmds.getAttr('{0}.translate'.format(loc))
-        print halfway
-
-
 
         points = [
 
@@ -170,35 +169,38 @@ class Spline(object) :
             cmds.connectAttr( '{0}.outputX'.format(mdn), '{0}.sx'.format(jnt) )
 
 
-
-
+    # create the control rig setup
     def controlUp(self):
 
-        self.startCtrl = control.Control( 'start_{0}_{1}{2}'.format(self.name,
-                                                                        nameSpace.SPLINE,
-                                                                        nameSpace.CONTROL),
-                                              position = cmds.xform( self.jointList[0], q=1, ws=1, t=1),
-                                              shape='cross')
-        self.startAim = locator.Locator( 'start_{0}_{1}'.format(self.name, nameSpace.LOCATOR))
 
-        self.midCtrl = control.Control( 'mid_{0}_{1}{2}'.format(self.name,
-                                                                        nameSpace.SPLINE,
-                                                                        nameSpace.CONTROL),
-                                            shape='star')
+        self.startCtrl = control.Control( 
+            "{0}_start_{1}{2}".format(self.name, nameSpace.SPLINE, nameSpace.CONTROL),
+            position = cmds.xform( self.jointList[0], q=1, ws=1, t=1),
+            shape='cross'
+        )
+        
+        self.startAim = locator.Locator( 
+            "{0}_start_{1}".format(self.name, nameSpace.LOCATOR))
 
-        self.endCtrl = control.Control( 'end_{0}_{1}{2}'.format(self.name,
-                                                                        nameSpace.SPLINE,
-                                                                        nameSpace.CONTROL),
-                                            position = cmds.xform( self.jointList[-1], q=1, ws=1, t=1),
-                                            shape='cross')
-        self.endAim = locator.Locator( 'end_{0}_{1}'.format(self.name, nameSpace.LOCATOR))
+        self.midCtrl = control.Control( 
+            "{0}_mid_{1}{2}".format(self.name, nameSpace.SPLINE, nameSpace.CONTROL),
+             shape='star'
+        )
+
+        self.endCtrl = control.Control( 
+            "{0}_end_{1}{2}".format(self.name, nameSpace.SPLINE, nameSpace.CONTROL),
+             position = cmds.xform( self.jointList[-1], q=1, ws=1, t=1),
+             shape='cross')
+        
+        self.endAim = locator.Locator( "{0}_end_{1}".format(self.name, nameSpace.LOCATOR))
 
     #start control
         self.startCtrl.create()
+
         self.startAim.create()
         self.startAim.setParent( self.startCtrl.getName() )
         #snap..
-        self.startAim.setPosition( cmds.xform( self.jointList[0], q=1, ws=1, t=1))
+        self.startAim.setPosition( cmds.xform( self.jointList[0], q=1, ws=1, t=1) )
 
 
     #mid control
@@ -212,17 +214,17 @@ class Spline(object) :
         self.endAim.setPosition( cmds.xform( self.jointList[-1], q=1, ws=1, t=1) )
 
         #pointConstrain start and end to mid
-        cmds.pointConstraint( self.startCtrl.getName(), self.endCtrl.getName(), self.midCtrl.getZeroGroup1() )
+        cmds.pointConstraint( self.startCtrl.getName(), self.endCtrl.getName(), self.midCtrl.getNull() )
         #aim mid to end ZeroGroup1
 
-        #cmds.aimConstraint( self.endCtrl.getName(), self.midCtrl.getZeroGroup1(),
+        #cmds.aimConstraint( self.endCtrl.getName(), self.midCtrl.getNull(),
         #                    aim = [1,0,0], u = [0,1,0], wut = 'objectrotation', wuo= self.startCtrl.getName() )
 
     #aim the start and end locators to mid
         cmds.aimConstraint( self.midCtrl.getName(), self.startAim.getName(),
-                            aim = [1,0,0], u = [0,1,0], wut = 'objectrotation', wuo= self.startCtrl.getZeroGroup1() )
+                            aim = [1,0,0], u = [0,1,0], wut = 'objectrotation', wuo= self.startCtrl.getNull() )
         cmds.aimConstraint( self.midCtrl.getName(), self.endAim.getName(),
-                            aim = [-1,0,0], u = [0,1,0], wut = 'objectrotation', wuo= self.endCtrl.getZeroGroup1() )
+                            aim = [-1,0,0], u = [0,1,0], wut = 'objectrotation', wuo= self.endCtrl.getNull() )
     #clusters...
         #startClusters
         cmds.select( '{0}.cv[0:1]'.format(self.getSplineCurve()) )
