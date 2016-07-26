@@ -19,8 +19,8 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-    def __init__(self, name=None, position=(0,0,0),align_to="world", shape="circle", nameType=nameSpace.CONTROL):
-        super(Control, self).__init__(name=name, nameType=nameType)
+    def __init__(self, name=None, position=(0,0,0),align_to="world", parent="world", shape="circle", nameType=nameSpace.CONTROL):
+        super(Control, self).__init__(name=name, position=position, parent=parent, nameType=nameType)
 
         self.color = "yellow"
         self.shape = shape
@@ -43,7 +43,7 @@ class Control(mayaBaseObject.MayaBaseObject):
         for arg in args:
             if type(arg) in [list, tuple]:
                 objects = [Control(name=obj) for obj in arg]
-                filter(lambda o: result.append(o), objects)
+                map(lambda o: result.append(o), objects)
             elif type(arg) == basestring:
                 result.append(Control(name=obj))
         return result
@@ -52,17 +52,15 @@ class Control(mayaBaseObject.MayaBaseObject):
     def setColors(cls, objects, color):
         if type(objects) not in [list, tuple]:
             return
-        for o in objects:
-            if isinstance(o, Control):
-                o.set_color(color)
+        objects = [o for o in objects if isinstance(o, Control)]
+        map(lambda x: o.set_color(color), objects)
 
     @classmethod
     def setShapes(cls, objects, shape):
         if type(objects) not in [list, tuple]:
             return
-        for o in objects:
-            if isinstance(o, Control):
-                o.set_shape(shape)
+        objects = [o for o in objects if isinstance(o, Control)]
+        map(lambda x: o.setShape(shape), objects)
 
     def getNull(self):
         return self.null
@@ -73,7 +71,7 @@ class Control(mayaBaseObject.MayaBaseObject):
         self.color = cmds.getAttr("%s.color" % self.name) or 'yellow'
         parent = cmds.listRelatives(self.name, p=True, type="transform")
         null = [n for n in parent if n.endswith(nameSpace.NULL)]
-        self.null = None if not len(null) else null[0]
+        self.null, self.parent = None if not len(null) else null[0]
 
     def create(self):
 
@@ -178,11 +176,7 @@ class Control(mayaBaseObject.MayaBaseObject):
     def set_to_origin(self):
 
         # pop control to world origin
-        target = ''
-
-        if hasattr(self, 'zero') and cmds.objExists(self.zero):
-            target = self.zero
-        elif hasattr(self, 'null') and cmds.objExists(self.null):
+        if hasattr(self, 'null') and cmds.objExists(self.null):
             target = self.null
         else:
             target = self.name
@@ -233,10 +227,8 @@ class Control(mayaBaseObject.MayaBaseObject):
 
 
 class Guide(Control):
-    def __init__(self, name, position=(0, 0, 0), parent=None):
-        super(Guide, self).__init__(name, position, parent)
-        self.position = position
-        self.parent = parent
+    def __init__(self, name, position=(0, 0, 0), parent=None, nameType=nameSpace.GUIDE):
+        super(Guide, self).__init__(name=name, position=position, parent=parent, nameType=nameType)
 
     def create(self):
         ctrlName = self.name

@@ -115,7 +115,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.postBuild()
 
     def createGuide(self, name, jnt, position=(0, 0, 0), parent=None):
-        guide = control.Guide(name, position, parent)
+        guide = control.Guide(name=name, position=position, parent=parent)
         guide.create()
         guide.setColor(self.getColor())
 
