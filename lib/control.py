@@ -237,7 +237,7 @@ class Control(mayaBaseObject.MayaBaseObject):
 
         if deleteOld:
             oldShapes = cmds.listRelatives(self.name, s=True) or []
-            filter(lambda s: cmds.delete(s), oldShapes)
+            map(lambda s: cmds.delete(s), oldShapes)
 
         cmds.parent(obj, self.name)
         cmds.xform(obj, os=True, t=(0, 0, 0), ro=(0, 0, 0), s=(1, 1, 1))
