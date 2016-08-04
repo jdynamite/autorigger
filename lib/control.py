@@ -19,8 +19,9 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-    def __init__(self, name=None, position=(0,0,0),align_to="world", parent="world", shape="circle", nameType=nameSpace.CONTROL):
-        super(Control, self).__init__(name=name, position=position, parent=parent, nameType=nameType)
+    def __init__(self, name=None, position=(0, 0, 0), align_to="world", parent="world", shape="circle", nameType=nameSpace.CONTROL):
+        super(Control, self).__init__(
+            name=name, position=position, parent=parent, nameType=nameType)
 
         self.color = "yellow"
         self.shape = shape
@@ -61,6 +62,49 @@ class Control(mayaBaseObject.MayaBaseObject):
             return
         objects = [o for o in objects if isinstance(o, Control)]
         map(lambda x: o.setShape(shape), objects)
+
+    @classmethod
+    def mirrorShape(cls):
+        sel = cmds.ls(sl=True) or []
+
+        if len(sel) != 2:
+            raise RuntimeError()
+
+        driver = sel[0]
+        driven = sel[1]
+
+        driver_shapes = cmds.listRelatives(driver, s=True) or []
+        driven_shapes = cmds.listRelatives(driven, s=True) or []
+
+        driver_shapes = [s for s in driver_shapes if not s.endswith("Orig")]
+        driven_shapes = [s for s in driven_shapes if not s.endswith("Orig")]
+
+        if not len(driver_shapes) or not len(driven_shapes):
+            raise RuntimeError()
+
+        for driver_shape, driven_shape in zip(driver_shapes, driven_shapes):
+            cvs = cmds.getAttr("{0}.cp".format(driver_shape), s=1)
+            cvs_driven = cmds.getAttr("{0}.cp".format(driven_shape), s=1)
+
+            if cvs != cvs_driven:
+                raise RuntimeError()
+
+            for i in xrange(cvs):
+                cv = "{0}.cv[{1}]"
+                driverCv = cv.format(driver_shape, str(i))
+                drivenCv = cv.format(driven_shape, str(i))
+
+                driverPos = cmds.xform(driverCv, q=True, ws=True, t=True)
+                drivenPos = [driverPos[0] * -1, driverPos[1], driverPos[2]]
+                cmds.xform(drivenCv, ws=True, t=drivenPos)
+
+    @classmethod
+    def saveShapes(cls):
+        pass
+
+    @classmethod
+    def loadShapes(cls):
+        pass
 
     def getNull(self):
         return self.null
@@ -228,7 +272,8 @@ class Control(mayaBaseObject.MayaBaseObject):
 
 class Guide(Control):
     def __init__(self, name, position=(0, 0, 0), parent=None, nameType=nameSpace.GUIDE):
-        super(Guide, self).__init__(name=name, position=position, parent=parent, nameType=nameType)
+        super(Guide, self).__init__(name=name, position=position,
+                                    parent=parent, nameType=nameType)
 
     def create(self):
         ctrlName = self.name
