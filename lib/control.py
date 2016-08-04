@@ -230,12 +230,12 @@ class Control(mayaBaseObject.MayaBaseObject):
         cmds.delete(cmds.pointConstraint(temp_grp, target))
         cmds.delete(temp_grp)
 
-    def get_shape_from(self, obj, destroy=True, deleteOld=True):
+    def get_shape_from(self, obj, destroy=True, replace=True):
 
         if not destroy:
             obj = cmds.duplicate(obj, rc=True, n="temp_shape_#")
 
-        if deleteOld:
+        if replace:
             oldShapes = cmds.listRelatives(self.name, s=True) or []
             map(lambda s: cmds.delete(s), oldShapes)
 
