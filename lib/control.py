@@ -1,4 +1,5 @@
 import maya.cmds as cmds
+import cPickle as pickle
 from autorigger.lib import mayaBaseObject
 from autorigger.lib import jsonData
 from autorigger.lib import controlFilePath
@@ -33,6 +34,21 @@ class Control(mayaBaseObject.MayaBaseObject):
 
         if cmds.objExists(self.name + ".isControl"):
             self.pop_control_attributes()
+
+    @classmethod
+    def getDefaultPath(cls, filename=None):
+        sceneName = cmds.file(q=True, sceneName=True)
+        wd = cmds.file(q=True, sceneName=True)
+        if filename and isinstance(filename, basestring):
+            if not filename.endswith('.shapes'):
+                filename += '.shapes'
+            wd = wd.strip(sceneName)
+            wd += filename
+            return wd
+        else:
+            wd = wd.strip('.ma')
+            wd = wd.strip('.mb')
+            return wd + '.shapes'
 
     @classmethod
     def bulkCreate(cls, *args):
@@ -100,11 +116,101 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     @classmethod
     def saveShapes(cls):
-        pass
+        keywords = ['Control', nameSpace.CONTROL]
+        path = cls.getDefaultPath()
+        the_file = open(path, 'wb')
+        shapesData = {}
+
+        # list nurbs curves
+        shapes = cmds.ls(type="nurbsCurve")
+        shapes = [s for s in shapes if not s.endswith('Orig')]
+
+        curveInfo = cmds.createNode("curveInfo")
+        inputPlug = "{0}.inputCurve".format(curveInfo)
+
+        for s in shapes:
+            parent = cmds.listRelatives(s, p=True) or []
+
+            if not len(parent):
+                continue
+            else:
+                parent = parent[0]
+                for key in keywords:
+                    if key not in parent:
+                        continue
+
+            if parent not in shapesData.keys():
+                shapesData[parent] = {}
+
+            if s not in shapesData[parent].keys():
+                shapesData[parent][s] = {}
+
+            shapePlug = "{0}.worldSpace[0]".format(s)
+            cmds.connectAttr(shapePlug, inputPlug, f=True)
+
+            knots = "{0}.knots".format(curveInfo)
+            deg = "{0}.degree".format(s)
+            cvs = "{0}.cv[*]".format(s)
+
+            degree = cmds.getAttr(deg)
+            period = cmds.getAttr("{0}.f".format(s))
+            positions = cmds.getAttr(cvs)
+
+            if period > 0:
+                for i in xrange(degree):
+                    positions.append(positions[i])
+
+            shapesData[parent][s]['knots'] = cmds.getAttr(knots)[0]
+            shapesData[parent][s]['period'] = period
+            shapesData[parent][s]['positions'] = positions
+            shapesData[parent][s]['degree'] = degree
+
+            if cmds.getAttr("{0}.overrideEnabled".format(s)):
+                color = "{0}.overrideColor".format(s)
+                shapesData[parent][s]['color'] = cmds.getAttr(color)
+            else:
+                shapesData[parent][s]['color'] = 'yellow'
+
+        cmds.delete(curveInfo)
+        pickle.dump(shapesData, the_file, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
     def loadShapes(cls):
-        pass
+        path = cmds.fileDialog(mode=0, directoryMask="*.shapes")
+        success = "Successfuly loaded shape {0} for {1}."
+        err = "{0} does not exist, skipping."
+        the_file = open(path, 'rb')
+        shapesData = pickle.load(the_file)
+        print shapesData
+
+        for obj in shapesData.keys():
+
+            if not cmds.objExists(obj):
+                print err.format(obj)
+                continue
+
+            # parent does exist
+            # delete shapes from obj
+
+            cmds.delete(cmds.listRelatives(obj, s=True, type="nurbsCurve"))
+
+            # initialize object as curve
+            con = cls(name='L_' + obj)
+            con.name = obj
+
+            for shape in shapesData[obj].keys():
+                pos = shapesData[obj][shape]['positions']
+                dg = shapesData[obj][shape]['degree']
+                knots = shapesData[obj][shape]['knots']
+                color = shapesData[obj][shape]['color']
+                period = shapesData[obj][shape]['period']
+
+                p = True if period > 0 else False
+                con.color = color
+
+                curve = cmds.curve(degree=dg, point=pos, knot=knots, per=p)
+                con.get_shape_from(curve, destroy=True, replace=False)
+                print success.format(shape, obj)
 
     def getNull(self):
         return self.null
@@ -146,15 +252,26 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     def set_color(self, color):
         color_map = {"red": 13, "yellow": 17, "blue": 6}
+        inv_map = {v: k for k, v in color_map.items()}
 
         shapes = cmds.listRelatives(self.name, c=True) or []
+        col = color_map[color] if isinstance(color, basestring) else color
+
+        if not cmds.objExists("%s.color" % self.name):
+            cmds.addAttr(self.name, ln='color', dt='string', k=False)
 
         for shape in shapes:
             cmds.setAttr("%s.overrideEnabled" % shape, 1)
-            if color in color_map:
+            if color in color_map.keys():
                 cmds.setAttr("%s.overrideColor" % shape, color_map[color])
                 cmds.setAttr("%s.color" % self.name, color, type='string')
                 self.color = color
+            else:
+                cmds.setAttr("%s.overrideColor" % shape, col)
+                if col in inv_map.keys():
+                    clr = inv_map[col]
+                    cmds.setAttr("%s.color" % self.name, clr, type='string')
+                    self.color = clr
 
     def set_shape(self, shape):
 
