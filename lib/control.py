@@ -124,9 +124,8 @@ class Control(mayaBaseObject.MayaBaseObject):
         # list nurbs curves
         shapes = cmds.ls(type="nurbsCurve")
         shapes = [s for s in shapes if not s.endswith('Orig')]
-
-        curveInfo = cmds.createNode("curveInfo")
-        inputPlug = "{0}.inputCurve".format(curveInfo)
+        shapes = [s for s in shapes if any(key in s for key in keywords)]
+        print shapes
 
         for s in shapes:
             parent = cmds.listRelatives(s, p=True) or []
@@ -135,9 +134,6 @@ class Control(mayaBaseObject.MayaBaseObject):
                 continue
             else:
                 parent = parent[0]
-                for key in keywords:
-                    if key not in parent:
-                        continue
 
             if parent not in shapesData.keys():
                 shapesData[parent] = {}
@@ -145,8 +141,10 @@ class Control(mayaBaseObject.MayaBaseObject):
             if s not in shapesData[parent].keys():
                 shapesData[parent][s] = {}
 
+            curveInfo = cmds.createNode("curveInfo")
+            inputPlug = "{0}.inputCurve".format(curveInfo)
             shapePlug = "{0}.worldSpace[0]".format(s)
-            cmds.connectAttr(shapePlug, inputPlug, f=True)
+            cmds.connectAttr(shapePlug, inputPlug)
 
             knots = "{0}.knots".format(curveInfo)
             deg = "{0}.degree".format(s)
@@ -155,12 +153,14 @@ class Control(mayaBaseObject.MayaBaseObject):
             degree = cmds.getAttr(deg)
             period = cmds.getAttr("{0}.f".format(s))
             positions = cmds.getAttr(cvs)
+            knots = cmds.getAttr(knots)[0]
 
             if period > 0:
                 for i in xrange(degree):
                     positions.append(positions[i])
 
-            shapesData[parent][s]['knots'] = cmds.getAttr(knots)[0]
+            knots = knots[:len(positions) + degree - 1]
+            shapesData[parent][s]['knots'] = knots
             shapesData[parent][s]['period'] = period
             shapesData[parent][s]['positions'] = positions
             shapesData[parent][s]['degree'] = degree
@@ -171,7 +171,8 @@ class Control(mayaBaseObject.MayaBaseObject):
             else:
                 shapesData[parent][s]['color'] = 'yellow'
 
-        cmds.delete(curveInfo)
+            cmds.delete(curveInfo)
+
         pickle.dump(shapesData, the_file, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
