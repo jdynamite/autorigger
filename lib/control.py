@@ -1,4 +1,5 @@
 import maya.cmds as cmds
+import maya.mel as mel
 import cPickle as pickle
 from autorigger.lib import mayaBaseObject
 from autorigger.lib import jsonData
@@ -125,7 +126,7 @@ class Control(mayaBaseObject.MayaBaseObject):
         shapes = cmds.ls(type="nurbsCurve")
         shapes = [s for s in shapes if not s.endswith('Orig')]
         shapes = [s for s in shapes if any(key in s for key in keywords)]
-        print shapes
+        shapes = [s for s in shapes if s is not None]
 
         for s in shapes:
             parent = cmds.listRelatives(s, p=True) or []
@@ -153,6 +154,18 @@ class Control(mayaBaseObject.MayaBaseObject):
             degree = cmds.getAttr(deg)
             period = cmds.getAttr("{0}.f".format(s))
             positions = cmds.getAttr(cvs)
+
+            # check empty positions
+            for pos in positions:
+                if all(p == 0 for p in pos):
+                    cmds.select(s)
+                    mel.eval('doBakeNonDefHistory( 1, {"prePost"});')
+                    cmds.select(cl=True)
+                    positions = cmds.getAttr(cvs)
+                    degree = cmds.getAttr(deg)
+                    period = cmds.getAttr("{0}.f".format(s))
+                    break
+
             knots = cmds.getAttr(knots)[0]
 
             if period > 0:
@@ -165,11 +178,12 @@ class Control(mayaBaseObject.MayaBaseObject):
             shapesData[parent][s]['positions'] = positions
             shapesData[parent][s]['degree'] = degree
 
-            if cmds.getAttr("{0}.overrideEnabled".format(s)):
-                color = "{0}.overrideColor".format(s)
-                shapesData[parent][s]['color'] = cmds.getAttr(color)
-            else:
-                shapesData[parent][s]['color'] = 'yellow'
+            cplug = "{0}.overrideEnabled"
+            shapesData[parent][s]['color'] = 'yellow'
+            for obj in [parent, s]:
+                if cmds.getAttr(cplug.format(obj)):
+                    color = "{0}.overrideColor".format(obj)
+                    shapesData[parent][s]['color'] = cmds.getAttr(color)
 
             cmds.delete(curveInfo)
 
@@ -208,7 +222,6 @@ class Control(mayaBaseObject.MayaBaseObject):
 
                 p = True if period > 0 else False
                 con.color = color
-
                 curve = cmds.curve(degree=dg, point=pos, knot=knots, per=p)
                 con.get_shape_from(curve, destroy=True, replace=False)
                 print success.format(shape, obj)
