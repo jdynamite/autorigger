@@ -9,7 +9,6 @@ import maya.api.OpenMaya as om
 import math
 
 
-
 class Switch(object):
     """
     switch routine to mimic other languages switch
@@ -85,11 +84,12 @@ def orthoOrient(*args):
     instances = [list, tuple, om.MVector, om.MPoint]
 
     if len(args) != 2:
-        raise RuntimeError(
-            "Must pass exactly two arguments. An aim vector and an up vector.")
+        err = "Must an aim vector and an up vector."
+        raise RuntimeError(err)
         return
 
     newArgs = []
+
     for arg in args:
         if type(arg) in instances[:2]:
             if len(arg) == 3:
@@ -124,7 +124,7 @@ def orthoOrient(*args):
     matrixFn = om.MTransformationMatrix(rotMatrix)
     euler = matrixFn.rotation()
 
-    return [math.degrees(euler.x), math.degrees(euler.y), math.degrees(euler.z)]
+    return [math.degrees(eu) for eu in [euler.x, euler.y, euler.z]]
 
 
 def plugCheck(obj, plug):
@@ -146,7 +146,6 @@ def plugCheck(obj, plug):
 
 
 def subtract(a, b, plug="translate", name=None):
-
     """
     subtract b.plug from a.plug
     returns plusMinusAverage
@@ -171,7 +170,8 @@ def subtract(a, b, plug="translate", name=None):
     name = name if name is not None else "plusMinusAverage#"
     pma = cmds.createNode("plusMinusAverage", n=name)
     cmds.setAttr("{0}.operation".format(pma), 2)
-    attrs = ["input3D[0]", "input3D[1]"] if useTriple else ["input3D[0].input3Dx", "input3D[1].input3Dx"]
+    attrs = ["input3D[0]", "input3D[1]"] if useTriple else [
+        "input3D[0].input3Dx", "input3D[1].input3Dx"]
     inputs = ['.'.join([pma, attr]) for attr in attrs]
 
     for p, input in zip(plugs, inputs):
@@ -181,7 +181,6 @@ def subtract(a, b, plug="translate", name=None):
 
 
 def add(a, b, plug="translate", name=None):
-
     """
     add a and b with PMA if plug is not a component plug
     """
@@ -219,9 +218,66 @@ def add(a, b, plug="translate", name=None):
             cmds.connectAttr(p, input, f=True)
         return adl
 
+
 def multiply(a, b):
     pass
+
 
 def divide(a, b):
     pass
 
+
+def getParam(pt=[0, 0, 0], crv=None):
+
+    if crv is None:
+        return
+
+    point = om.MPoint(pt[0], pt[1], pt[2])
+    curveFn = om.MFnNurbsCurve(getDag(crv))
+    isOnCurve = curveFn.isPointOnCurve(point)
+
+    if isOnCurve:
+        return curveFn.getParamatAtPoint(point, 0.001, om.MSpace.kObject)
+    else:
+        point = curveFn.closestPoint(point, 0.001, om.MSpace.kObject)
+        return curveFn.getParamAtPoint(point, 0.001, om.MSpace.KObject)
+
+
+def getDag(obj):
+
+    if not cmds.objExists(obj):
+        err = "{0} doesn't exist."
+        raise RuntimeError(err.format(obj))
+
+    if 'dagNode' not in cmds.nodeType(obj, inherited=True):
+        err = "{0} is not a dag node"
+        raise RuntimeError(err.format(obj))
+
+    sel = om.MSelectionList()
+
+    if type(obj) in [list, tuple]:
+        for i, o in enumerate(obj):
+            sel.add(o)
+            return sel.getDagPath(i)
+    elif isinstance(obj, basestring):
+        sel.add(obj)
+        return sel.getDagPath(0)
+    else:
+        warn = "Couldn't parse {0} as it isn't str | list | tuple."
+        raise RuntimeWarning(warn.format(obj))
+        return obj
+
+
+def getMObject(obj):
+    sel = om.MSelectionList()
+    if type(obj) in [list, tuple]:
+        for i, o in enumerate(obj):
+            sel.add(o)
+            return sel.getDependNode(i)
+    elif isinstance(obj, basestring):
+        sel.add(obj)
+        return sel.getDependNode(0)
+    else:
+        warn = "Couldn't parse {0} as it isn't str | list | tuple."
+        raise RuntimeWarning(warn.format(obj))
+        return obj

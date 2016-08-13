@@ -235,7 +235,8 @@ class Control(mayaBaseObject.MayaBaseObject):
         self.color = cmds.getAttr("%s.color" % self.name) or 'yellow'
         parent = cmds.listRelatives(self.name, p=True, type="transform")
         null = [n for n in parent if n.endswith(nameSpace.NULL)]
-        self.null, self.parent = None if not len(null) else null[0]
+        self.null = None if not len(null) else null[0]
+        self.parent = self.null if self.null else parent[0]
 
     def create(self):
 
@@ -344,9 +345,7 @@ class Control(mayaBaseObject.MayaBaseObject):
         # otherwise, create new control aligned to align_to
         # with same specs as self but different color
 
-        mirrored = Control(newName, align_to, self.shape)
-
-        return mirrored
+        return Control(name=newName, position=self.position, align_to=align_to, shape=self.shape)
 
     def set_to_origin(self):
 
