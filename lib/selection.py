@@ -34,7 +34,7 @@ def flattenComponents(components):
     return ordered
 
 
-def orderedVertices(vtx1=None, vtx2=None):
+def vertsBetween(vtx1=None, vtx2=None):
     """
     After selecting two vertices, function returns
     an ordered list of vertices between vtx1 and vtx2
@@ -44,13 +44,16 @@ def orderedVertices(vtx1=None, vtx2=None):
     if all(v for v in [vtx1, vtx2]) is None:
         sel = cmds.ls(sl=True)
     else:
+        if not all(".vtx[" in v for v in [vtx1, vtx2]):
+            err = "Args must be in the form of mesh.vtx[n]."
+            raise RuntimeError(err)
         sel = [vtx1, vtx2]
+
     if None in sel or len(sel) != 2:
-        raise RuntimeError("Unable to work with input")
+        err = "Must select two verts or pass two arguments as verts."
+        raise RuntimeError(err)
 
-    start = util.getIndexFromStr(sel[0])
-    end = util.getIndexFromStr(sel[1])
-
+    start, end = [util.getIndexFromStr(s) for s in sel]
     allverts = util.flattenComponents(mel.eval("polySelectSp -q -loop"))
     allindices = [util.getIndexFromStr(idx) for idx in allverts]
     sel = allverts[0]
