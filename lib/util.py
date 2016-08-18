@@ -281,3 +281,19 @@ def getMObject(obj):
         warn = "Couldn't parse {0} as it isn't str | list | tuple."
         raise RuntimeWarning(warn.format(obj))
         return obj
+
+
+def strBetween(string, start, end):
+    """
+    given string="body.vtx[0]"
+    and start '.', end '['
+    will return "vtx"
+    """
+
+    if not all(isinstance(arg, basestring) for arg in [string, start, end]):
+        raise RuntimeError("Please pass three strings.")
+
+    iis = string.index(start) + 1
+    iie = string.index(end)
+
+    return string[iis:iie]
