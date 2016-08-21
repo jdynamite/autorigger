@@ -227,7 +227,7 @@ def divide(a, b):
     pass
 
 
-def getParam(pt=[0, 0, 0], crv=None):
+def getParam(pt=[0, 0, 0], crv=None, tol=0.001):
 
     if crv is None:
         return
@@ -237,10 +237,10 @@ def getParam(pt=[0, 0, 0], crv=None):
     isOnCurve = curveFn.isPointOnCurve(point)
 
     if isOnCurve:
-        return curveFn.getParamatAtPoint(point, 0.001, om.MSpace.kObject)
+        return curveFn.getParamatAtPoint(point, tol, om.MSpace.kObject)
     else:
-        point = curveFn.closestPoint(point, 0.001, om.MSpace.kObject)
-        return curveFn.getParamAtPoint(point, 0.001, om.MSpace.KObject)
+        point = curveFn.closestPoint(point, tol, om.MSpace.kObject)
+        return curveFn.getParamAtPoint(point, tol, om.MSpace.KObject)
 
 
 def getDag(obj):
