@@ -85,7 +85,8 @@ class Control(mayaBaseObject.MayaBaseObject):
         sel = cmds.ls(sl=True) or []
 
         if len(sel) != 2:
-            raise RuntimeError()
+            err = "Please select two curves. Driver -> Driven"
+            raise RuntimeError(err)
 
         driver = sel[0]
         driven = sel[1]
@@ -97,7 +98,8 @@ class Control(mayaBaseObject.MayaBaseObject):
         driven_shapes = [s for s in driven_shapes if not s.endswith("Orig")]
 
         if not len(driver_shapes) or not len(driven_shapes):
-            raise RuntimeError()
+            err = "Couldn't find any shapes attached to one or both objects."
+            raise RuntimeError(err)
 
         for driver_shape, driven_shape in zip(driver_shapes, driven_shapes):
             cvs = cmds.getAttr("{0}.cp".format(driver_shape), s=1)
