@@ -237,10 +237,9 @@ def getParam(pt=[0, 0, 0], crv=None, tol=0.001):
     isOnCurve = curveFn.isPointOnCurve(point)
 
     if isOnCurve:
-        return curveFn.getParamatAtPoint(point, tol, om.MSpace.kObject)
+        return curveFn.getParamAtPoint(point, tol, om.MSpace.kObject)
     else:
-        point = curveFn.closestPoint(point, tol, om.MSpace.kObject)
-        return curveFn.getParamAtPoint(point, tol, om.MSpace.KObject)
+        return curveFn.closestPoint(point, tol, om.MSpace.kObject)[1]
 
 
 def getDag(obj):
