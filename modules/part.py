@@ -12,7 +12,7 @@ from autorigger.lib import util
 from autorigger.lib import nameSpace
 from autorigger.lib import mayaBaseObject
 from autorigger.lib import control
-from autorigger.lib import util
+from autorigger.lib import joint
 
 reload(control)
 
@@ -68,8 +68,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         cmds.parent(self.skeletonGroup, self.setupGroup)
         cmds.parent(self.guidesGroup, self.setupGroup)
 
-        for grp in [self.group, self.jointsGroup, self.controlsGroup, self.noXformGroup, self.hookGroup]:
-            util.getGroup(grp)
+
 
         self.masterGuide.create()
         self.masterGuide.setParent(self.guidesGroup)
@@ -88,10 +87,10 @@ class Part(mayaBaseObject.MayaBaseObject):
         # delete setup data(which is the guides)
         cmds.createNode("transform", n=self.group)
         cmds.addAttr(self.group, ln="bindJnts", at="message")
-        cmds.createNode("transform", n=self.jointsGroup)
-        cmds.createNode("transform", n=self.controlsGroup)
-        cmds.createNode("transform", n=self.noXformGroup)
-        cmds.createNode("transform", n=self.hookGroup)
+
+        for grp in [self.jointsGroup, self.controlsGroup, self.noXformGroup, self.hookGroup]:
+            util.getGroup(grp)
+
 
         cmds.parent(self.jointsGroup, self.group)
         cmds.parent(self.controlsGroup, self.group)
@@ -100,10 +99,29 @@ class Part(mayaBaseObject.MayaBaseObject):
 
         cmds.delete(self.guidesGroup)
 
-        cmds.parent(cmds.listRelatives(
-            self.skeletonGroup, c=True), self.jointsGroup)
+
+        skeletonJnts = self.getSkeletonJoints()
+
+        if skeletonJnts:
+            for jnt in skeletonJnts:
+                jnt = joint.Joint(jnt)
+                jnt.rotateToOrient()
+                cmds.addAttr(jnt.getName(), ln="part", at="message")
+
+                cmds.connectAttr(
+                    "{0}.bindJnts".format(self.group),
+                    "{0}.part".format(jnt.getName()),
+                    f=True
+                )
+        '''
+        # parent joints to self.jointsGroup
+        cmds.parent(
+            cmds.listRelatives(self.skeletonGroup, c=True),
+            self.jointsGroup
+        )
 
         cmds.delete(self.setupGroup)
+        '''
 
     def build(self):
         # build will be coded in respective modules. This is just going to be
@@ -128,6 +146,16 @@ class Part(mayaBaseObject.MayaBaseObject):
         constraint = cmds.pointConstraint(guide.getName(), jnt)[0]
         cmds.parent(constraint)
         return guide
+
+    def getSkeletonJoints(self):
+        skeletonJnts = cmds.listRelatives(
+            self.skeletonGroup,
+            ad=True
+        )
+
+        if skeletonJnts:
+            return skeletonJnts
+        return None
 
 
     def getDownAxis(self):

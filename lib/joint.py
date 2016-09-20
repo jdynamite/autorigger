@@ -27,9 +27,16 @@ class Joint(mbo.MayaBaseObject):
         # self.format_name()
         cmds.joint(n=self.name, p=self.position)
 
-    # just freezes transform. Looks fancy but under the hood it's not
     def orientToRotate(self):
-        cmds.makeIdentity(self.getName(), apply=True, rotate=True)
+        ori = cmds.xform(self.getName(), q=True, ws=True, ro=True)
+        cmds.setAttr("{0}.jo".format(self.getName()), 0, 0, 0)
+        cmds.xform(self.getName(), ws=True, ro=ori)
+
+    def rotateToOrient(self):
+        self.orientToRotate()
+        rot = cmds.getAttr( "{0}.r".format( self.getName() ) )
+        cmds.setAttr("{0}.jo".format(self.getName()), rot[0][0], rot[0][1], rot[0][2])
+        cmds.setAttr("{0}.r".format(self.getName()), 0, 0, 0)
 
     def orientJoint(self, downAxis, upDown):
         for arg in [downAxis, upDown]:

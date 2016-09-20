@@ -1,7 +1,10 @@
-#NoRoll Class
+# NoRoll Class
 
-#NoRoll will just duplicate given joints and create an ikh with 0,0,0 pole vector direction
-#It is meant to be built off an existing set up
+# NoRoll's main purpose is to funciton as a twist reader
+# NoRoll will just duplicate given joints and create an ikh with 0,0,0 pole vector direction
+# It is meant to be built off an existing set up
+
+
 
 
 import maya.cmds as cmds
@@ -45,12 +48,18 @@ class Noroll(object) :
 
         #duplicate given joints
         cmds.duplicate( self.oldJoint1, n=self.dupJoint1, po=True )
-        cmds.duplicate( self.oldJoint2, n=self.dupJoint2, po=True)
+        cmds.duplicate( self.oldJoint2, n=self.dupJoint2, po=True )
         cmds.parent( self.dupJoint2, self.dupJoint1 )
         cmds.parent(self.dupJoint1, w=True)
 
         #create rp ik
-        ik = cmds.ikHandle(sol='ikRPsolver', sj=self.dupJoint1, ee=self.dupJoint2, n=self.ik)[0]
+        ik = cmds.ikHandle(
+            sol='ikRPsolver',
+            sj=self.dupJoint1,
+            ee=self.dupJoint2,
+            n=self.ik
+        )[0]
+
         #zero pole vectors
         cmds.setAttr("{0}.poleVectorX".format(self.ik), 0)
         cmds.setAttr("{0}.poleVectorY".format(self.ik), 0)
@@ -67,16 +76,23 @@ class Noroll(object) :
 
     def twistReader(self, name, joint, noroll, aim, wuo ):
         #create a twist evaluator that happens at the elbow
-        twistReader = cmds.duplicate( joint,
-                                      po=True,
-                                      n='{0}_twistReader_jnt'.format(name) )[0]
+        twistReader = cmds.duplicate(
+            joint,
+            po=True,
+            n='{0}_twistReader_jnt'.format(name)
+        )[0]
 
         cmds.parent( twistReader, noroll)
         cmds.setAttr( '{0}.radius'.format(twistReader), 4)
         #aim that mother fucker
         cmds.select(cl=True)
-        cmds.aimConstraint( aim, twistReader,
-                            wut='objectrotation', wuo=wuo,
-                            aim=(1,0,0), u=(0,1,0))
+        cmds.aimConstraint(
+            aim,
+            twistReader,
+            wut='objectrotation',
+            wuo=wuo,
+            aim=(1,0,0),
+            u=(0,1,0)
+        )
 
         return twistReader

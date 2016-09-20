@@ -97,9 +97,14 @@ class Spline(object) :
         #create joint chain
         for i in range( 0, self.jointAmmount ):
             jointNum = i+1
-            self.jointList.append( cmds.duplicate( startJoint,
-                                                   n= '{0}_{1}{2}'.format( self.name, nameSpace.SPLINE, str(jointNum) ),
-                                                   po=True )[0] )
+            self.jointList.append(
+                cmds.duplicate(
+                    startJoint,
+                    n= '{0}_{1}{2}'.format( self.name, nameSpace.SPLINE, str(jointNum) ),
+                    po=True
+                )[0]
+            )
+
             #place them accordingly
             #get tx attr
             totalDist = cmds.getAttr( '{0}.tx'.format( endJoint ))
@@ -127,6 +132,10 @@ class Spline(object) :
             endJointPosition
 
         ]
+
+        print 'Start of curve created at: {0}'.format( str(startJointPosition) )
+        print 'End of curve created at: {0}'.format( str(endJointPosition) )
+
         cmds.curve(ep=points, d=3, n=self.curve )
 
         #delete the start and end joints, we don't need them anymore
@@ -170,7 +179,7 @@ class Spline(object) :
 
 
     # create the control rig setup
-    def controlUp(self):
+    def buildControls(self):
 
 
         self.startCtrl = control.Control( 

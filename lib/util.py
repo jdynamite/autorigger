@@ -34,7 +34,6 @@ class Switch(object):
 
 # returns grp if it exists, otherwise creates the grp and returns it
 
-
 def getGroup(grp):
     if not isinstance(grp, basestring):
         raise RuntimeError("Pass a string puhleeze.")

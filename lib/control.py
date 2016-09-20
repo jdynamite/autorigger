@@ -10,6 +10,12 @@ from autorigger.lib.util import Switch
 
 reload(mayaBaseObject)
 
+'''
+To-Do: add a color input so we don't have to do
+control.setColor(color) each time we make a new control
+it'll save a line
+'''
+
 
 class Control(mayaBaseObject.MayaBaseObject):
     """

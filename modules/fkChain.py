@@ -16,20 +16,7 @@ from autorigger.lib import nameSpace
 
 reload(part)
 reload(nameSpace)
-'''
-import part as part
-import RigTools.libs.joint as joint
-import RigTools.libs.control as control
-import RigTools.libs.name as name
-import RigTools.libs.attribute as attribute
-import RigTools.libs.curve as curve
-reload(part)
-reload(joint)
-reload(control)
-reload(name)
-reload(attribute)
-reload(curve)
-'''
+
 
 #limb inherits a bit from IkfkLimb
 class FkChain(part.Part):
