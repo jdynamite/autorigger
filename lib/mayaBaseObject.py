@@ -3,6 +3,7 @@ mayaBaseObject
 '''
 
 import maya.cmds as cmds
+import control
 import nameSpace
 
 
@@ -84,7 +85,6 @@ class MayaBaseObject(object):
             cmds.parent(parent, value)
             print ' jk here i am'
 
-
         self.parent = value
 
     def checkParent(self, obj, nameType):
@@ -122,6 +122,8 @@ class MayaBaseObject(object):
         # delete children
         cmds.delete(cmds.listRelatives(self.null, ad=True))
         cmds.parent(self.name, self.null)
+        self.parent = self.null
 
-        if cmds.objExists(self.parent):
+        if cmds.objExists(self.parent) and self.null is not self.parent:
+
             cmds.parent(self.null, self.parent)

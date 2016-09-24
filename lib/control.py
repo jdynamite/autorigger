@@ -318,8 +318,35 @@ class Control(mayaBaseObject.MayaBaseObject):
                         positions, degree, self.name + "_temp")
                     self.get_shape_from(curve, destroy=True)
 
+    def setPosition(self, value, world=True):
+        """
+        overloaded method of mayaBaseObject
+        sets position of parent null if it exists
+        otherwise acts on control itself
+        """
+        self.position = tuple(value)
+        if hasattr(self, 'null') and cmds.objExists(self.null):
+            cmds.xform(self.getNull(), ws=world, t=self.position)
+        else:
+            cmds.xform(self.getName(), ws=world, t=self.position)
+
+    def setRotation(self, value, world=True):
+        """
+        overloaded method of mayaBaseObject
+        sets rotation of parent null if it exists
+        otherwise acts on control itself
+        """
+        self.rotation = value
+        if hasattr(self, 'null') and cmds.objExists(self.null):
+            cmds.xform(self.getNull(), ws=world, ro=self.rotation)
+        else:
+            cmds.xform(self.getName(), ws=world, ro=self.rotation)
+
     def mirror(self):
-        # look for a mirror control object on the other side
+        """
+        returns the mirrored control, aligned to opposite side
+        if an object exists there
+        """
 
         sideLower = self.side.lower()
         otherSide = ""
@@ -350,14 +377,13 @@ class Control(mayaBaseObject.MayaBaseObject):
 
         newName = self.name.replace(self.side, otherSide)
 
-        # otherwise, create new control aligned to align_to
-        # with same specs as self but different color
-
         return Control(name=newName, position=self.position, align_to=align_to, shape=self.shape)
 
     def set_to_origin(self):
+        """
+        pops control/null to origin
+        """
 
-        # pop control to world origin
         if hasattr(self, 'null') and cmds.objExists(self.null):
             target = self.null
         else:
@@ -369,6 +395,11 @@ class Control(mayaBaseObject.MayaBaseObject):
         cmds.delete(temp_grp)
 
     def get_shape_from(self, obj, destroy=True, replace=True):
+        """
+        copies the shape(s) from passed object, with the option
+        to destroy that object or not, and the option to replace
+        all existing shapes
+        """
 
         if not destroy:
             obj = cmds.duplicate(obj, rc=True, n="temp_shape_#")
@@ -389,6 +420,10 @@ class Control(mayaBaseObject.MayaBaseObject):
         cmds.delete(obj)
 
     def drive_constrained(self, obj, p=False, r=False, s=False, o=False):
+        """
+        establish driving relationships between control and another object
+        p = position, r = rotation, s = scale, o = maintain offset
+        """
         if not cmds.objExists(obj):
             return
         if s:
@@ -404,8 +439,15 @@ class Control(mayaBaseObject.MayaBaseObject):
             cmds.orientConstraint(self.name, obj, mo=o)
 
     def drive_parented(self, obj):
-        if cmds.objExists(obj):
-            cmds.parent(obj, self.name)
+        """
+        parent obj to control directly
+        """
+        if isinstance(obj, basestring):
+            if cmds.objExists(obj):
+                cmds.parent(obj, self.name)
+            else:
+                err = "Couldn't find passed obj: {0}"
+                raise RuntimeError(err.format(obj))
 
 
 class Guide(Control):
