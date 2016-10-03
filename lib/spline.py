@@ -47,6 +47,11 @@ class Spline(object) :
         self.jointList = list()
         self.curve = "{0}_curveIk".format( self.name )
 
+    # doing this little custom thing so that
+    # we can get the mdn that stretches to plug in the global scale
+    def getMdn(self):
+        return self.mdn
+
     def getStartCtrl(self):
         return self.startCtrl.getName()
 
@@ -177,6 +182,7 @@ class Spline(object) :
 
             cmds.connectAttr( '{0}.outputX'.format(mdn), '{0}.sx'.format(jnt) )
 
+        self.mdn = mdn
 
     # create the control rig setup
     def buildControls(self):

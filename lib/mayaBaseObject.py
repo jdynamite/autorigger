@@ -3,7 +3,7 @@ mayaBaseObject
 '''
 
 import maya.cmds as cmds
-import control
+#import control
 import nameSpace
 
 
@@ -83,7 +83,6 @@ class MayaBaseObject(object):
             parent = parent[0]
             parent = self.checkParent(parent, nameSpace.ZERO)
             cmds.parent(parent, value)
-            print ' jk here i am'
 
         self.parent = value
 

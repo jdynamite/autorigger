@@ -32,9 +32,10 @@ reload(spline)
 
 # limb inherits a bit from IkfkLimb
 class Limb(part.Part):
-    def __init__(self, name, position=([1, 0, 0], [5, 0, -2], [10, 0, 0]), mirror=True):
+    def __init__(self, name, positions=([2, 5, 0], [7, 5, -2], [12, 5, 0]), jointAmmount=3, mirror=True):
         super(Limb, self).__init__(name)
 
+        '''
         # this is just strings of joint names
         self.startJoint = joint.Joint("{0}_upLimb_{1}".format(
             self.getSide(), nameSpace.BINDJOINT))
@@ -42,6 +43,9 @@ class Limb(part.Part):
             "{0}_loLimb_{1}".format(self.getSide(), nameSpace.BINDJOINT))
         self.endJoint = joint.Joint("{0}_endLimb_{1}".format(
             self.getSide(), nameSpace.BINDJOINT))
+        '''
+
+        self.positions = positions
 
         # this sets up the ribbon master group
         self.ribbonMasterGroup = "{0}_rbn_master_grp".format(name)
@@ -57,200 +61,27 @@ class Limb(part.Part):
     def setup(self):
         super(Limb, self).setup()
 
-        # stores joint names in a list
-        jointList = [
-            self.startJoint,
-            self.middleJoint,
-            self.endJoint
-        ]
+        # place guides
+        self.placeGuides( self.positions )
 
-        # parenting joints to guidesGroup so it takes all the constraintNodes as well
-        parent = self.guidesGroup
 
-        jntPositions = list()
-        if self.getSide() == nameSpace.LEFT:
-            jntPositions = ([1, 0, 0], [4.5, 0, -0.5], [8, 0, 0])
-
-        elif self.getSide() == nameSpace.RIGHT:
-            jntPositions = ([-1, 0, 0], [-4.5, 0, -0.5], [-8, 0, 0])
-
-        elif self.getSide() == nameSpace.CENTER:
-            jntPositions = ([-1, 0, 0], [-4.5, 0, -0.5], [-8, 0, 0])
-
-        # this builds and names the bind joints
-        self.guides = list()
-        for i, jnt in enumerate(jointList):
-            jnt.create()
-            jnt.setPosition(jntPositions[i])
-            cmds.parent( jnt.getName(), parent )
-            self.guides.append(
-                self.createGuide(
-                    name=jnt.getName().replace(nameSpace.BINDJOINT, nameSpace.GUIDE),
-                    jnt=jnt.getName(),
-                    position=jnt.getPosition(),
-                    parent=self.guidesGroup
-                )
-            )
-            parent = jnt.getName()
-
-        aimConstraintList = list()
-        self.startGuide = self.guides[0]
-        self.middleGuide = self.guides[1]
-        self.endGuide = self.guides[2]
-
-        aimConstraintList.append(
-            cmds.aimConstraint(
-                self.middleJoint.getName().replace(nameSpace.BINDJOINT, nameSpace.GUIDE),
-                self.startJoint.getName()
-            )[0]
-        )
-
-        aimConstraintList.append(
-            cmds.aimConstraint(
-                self.endJoint.getName().replace(nameSpace.BINDJOINT, nameSpace.GUIDE),
-                self.middleJoint.getName()
-            )[0]
-        )
-
-        constraint = cmds.orientConstraint(
-            self.middleJoint.getName(),
-            self.endJoint.getName()
-        )[0]
-
-        cmds.parent(aimConstraintList, self.guidesGroup)
-        cmds.parent(constraint, self.guidesGroup)
-
-        # switch class comes in handy
-        self.aimAttr = attribute.switch(
-            self.masterGuide.getName(),
-            "aim",
-            0,
-            ["x", "y", "z", "-x", "-y", "-z"],
-            [ [1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 0, 0], [0, -1, 0], [0, 0, -1] ]
-        )
-
-        self.upAttr = attribute.switch(
-            self.masterGuide.getName(),
-            "up",
-            0,
-            ["x", "y", "z", "-x", "-y", "-z"],
-            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 0, 0], [0, -1, 0], [0, 0, -1]]
-        )
-
-        # parent joints to joints groups now, so now jointsGroup only has joints
-        cmds.parent(self.startJoint.getName(), self.skeletonGroup)
-
-        #####################################################
-        # this part is the up vector math
-        #####################################################
-        # plus minus average nodes
-        pma1 = cmds.createNode(
-            "plusMinusAverage",
-            n="{0}_001_pma".format(self.getName())
-        )
-
-        pma2 = cmds.createNode(
-            "plusMinusAverage",
-            n="{0}_002_pma".format(self.getName())
-        )
-
-        cmds.setAttr("{0}.operation".format(pma1), 2)
-        cmds.setAttr("{0}.operation".format(pma2), 2)
-
-        dcms = []
-        for guide in self.guides:
-            dcmName = nameSpace.DELIMITER.join([guide.getName(), nameSpace.DCM])
-            dcm = cmds.createNode("decomposeMatrix", n=dcmName)
-            guideMatrix = "{0}.worldMatrix[0]".format(guide.getName())
-            dcmInput = "{0}.inputMatrix".format(dcm)
-            cmds.connectAttr(guideMatrix, dcmInput, f=True)
-            dcms.append(dcm)
-
-        # end is subtracted from start
-        cmds.connectAttr(
-            "{0}.outputTranslate".format(dcms[2]),
-            "{0}.input3D[0]".format(pma1)
-        )
-
-        cmds.connectAttr(
-            "{0}.outputTranslate".format(dcms[0]),
-            "{0}.input3D[1]".format(pma1)
-        )
-
-        cmds.connectAttr(
-            "{0}.outputTranslate".format(dcms[1]),
-            "{0}.input3D[0]".format(pma2)
-        )
-        cmds.connectAttr(
-            "{0}.outputTranslate".format(dcms[0]),
-            "{0}.input3D[1]".format(pma2)
-        )
-
-        # vcp is vector product
-        vcp = cmds.createNode(
-            "vectorProduct",
-            n="{0}_{1}".format(self.getName(), nameSpace.VCP)
-        )
-
-        cmds.setAttr("{0}.operation".format(vcp), 2)
-        cmds.setAttr("{0}.normalizeOutput".format(vcp), 1)
-
-        cmds.connectAttr(
-            "{0}.output3D".format(pma2),
-            "{0}.input1".format(vcp),
-            f=True
-        )
-        cmds.connectAttr(
-            "{0}.output3D".format(pma1),
-            "{0}.input2".format(vcp),
-            f=True
-        )
-
-        # connects axis attributes to aimConstraints
-        for cst in aimConstraintList:
-            cmds.connectAttr(self.upAttr, "{0}.upVector".format(cst), f=True)
-            cmds.connectAttr(self.aimAttr, "{0}.aimVector".format(cst), f=True)
-
-            cmds.connectAttr(
-                "{0}.output".format(vcp),
-                "{0}.worldUpVector".format(cst),
-                f=True
-            )
-
-        # so that the aim and up are not both x
-        cmds.setAttr("{0}.up".format(self.masterGuide.getName()), 1)
-        self.strUpAttr = (cmds.getAttr("{0}.up".format(
-            self.masterGuide.getName()), asString=True))
         cmds.select(cl=True)
 
     def postSetup(self):
         super(Limb, self).postSetup()
-        # before you delete the master guide, query the down axis
-        # get what you want from him, then kill him! Bwuahahaha
-        self.strAimAttr = (
-            cmds.getAttr("{0}.aim".format(self.masterGuide.getName()), asString=True)
-        )
-        # remove the - if there is one
-        if (len(self.strAimAttr)):
-            self.downAxis = self.strAimAttr[-1]
-        else:
-            self.downAxis = self.strAimAttr
+        pass
 
     def preBuild(self):
         super(Limb, self).preBuild()
+        pass
 
     def build(self):
         super(Limb, self).build()
 
-        #self.strAimAttr = (
-        #    cmds.getAttr("{0}.aim".format(self.masterGuide.getName()),
-        #    asString=True)
-        #)
-
         self.ikfkSystem = ikfk.LimbIkFk([
-            self.startJoint.getName(),
-            self.middleJoint.getName(),
-            self.endJoint.getName()
+            self.joints[0],
+            self.joints[1],
+            self.joints[2]
         ])
         self.ikfkSystem.create()
 
@@ -261,7 +92,6 @@ class Limb(part.Part):
         self.ikfkGroup = self.ikfkSystem.getGroup()
 
         cmds.parent(self.ikfkGroup, self.jointsGroup)
-
         ###########################################################
         ###
         ###########################################################
@@ -274,18 +104,16 @@ class Limb(part.Part):
         self.createFk(fkJoints)
 
         # setup stretch on ik
-        #currentDist = self.currentLimbDistSetup()
+        self.currentDist = self.currentLimbDistSetup()
 
         # currentDist is the return of currentDist attr
-        #self.createStretchyIk( currentDist )
+        self.createStretchyIk( self.currentDist )
 
         # noroll
-        #self.noRollSetup()
-
+        self.noRollSetup()
 
         # close selection before exiting, just to be safe
         cmds.select(cl=True)
-
 
     def postBuild(self):
         super(Limb, self).postBuild()
@@ -293,11 +121,16 @@ class Limb(part.Part):
         if cmds.objExists(self.ikfkSystem.getHandle()):
             cmds.setAttr("{0}.v".format(self.ikfkSystem.getHandle()), 0)
 
+        # hide fk, ik, and blend joints.
         for jnt in self.ikfkSystem.getBlendJoints():
             cmds.setAttr("{0}.visibility".format(jnt), 1)
+        for jnt in self.ikfkSystem.getIkJoints():
+            cmds.setAttr("{0}.visibility".format(jnt), 0)
+        for jnt in self.ikfkSystem.getFkJoints():
+            cmds.setAttr("{0}.visibility".format(jnt), 0)
 
         # delete bind joints
-        cmds.delete(self.startJoint.getName())
+        # cmds.delete(self.joints[0])
 
 #####################################################
 # Additional Modules for cleaner code
@@ -324,6 +157,8 @@ class Limb(part.Part):
             self.ikfkSystem.getHandle()
         )
 
+        cmds.parent(pvCtrl.getNull(), self.controlsGroup)
+
         #return pv
         return pvCtrl.getName()
 
@@ -343,7 +178,7 @@ class Limb(part.Part):
             ikName,
             ikPosition,
             self.controlsGroup,
-            "sphere"
+            shape="sphere"
         )
 
         #position input aren't kicking in, so doing this should work
@@ -356,7 +191,6 @@ class Limb(part.Part):
         cmds.parent(ikHandle, self.ikCtrl.getName())
         cmds.orientConstraint(self.ikCtrl.getName(), self.ikJoints[-1], mo=True)
 
-        self.parent = self.controlsGroup
 
         # add ikfk switch attr to ikhandle
         cmds.select(self.ikCtrl.getName())
@@ -374,18 +208,22 @@ class Limb(part.Part):
             "{0}_{1}".format(self.getName(), self.ikfkGroup)
         )
 
+        cmds.parent(self.ikCtrl.getNull(), self.controlsGroup)
+
     def createFk(self, fkJoints):
         '''
         fkJoints: input list of fkJoints
         '''
         fkCtrls = list()
 
+        parent = self.controlsGroup
+
         for jnt in fkJoints:
 
             fkCtrl = control.Control(
                 "{0}_{1}".format(jnt, nameSpace.CONTROL),
                 cmds.xform(jnt, q=True, ws=True, t=True),
-                self.parent,
+                parent,
                 "circle"
             )
 
@@ -404,9 +242,18 @@ class Limb(part.Part):
             cmds.xform(fkCtrl.null, ws=True, ro=rot)
             # snap fkCtrl
             cmds.parentConstraint(ctrlName, jnt)
-            cmds.scaleConstraint(ctrlName, jnt)
+            # cmds.scaleConstraint(ctrlName, jnt)
 
-            self.parent = ctrlName
+            # Don't scale constraint because it changes the values of scale when nodes above the hierarchy
+            # scale. And that is causing problems.
+            # instead we do a direct connection! *Bowser laugh*
+            cmds.connectAttr(
+                "{0}.scale".format(ctrlName),
+                "{0}.scale".format(jnt))
+
+
+            cmds.parent(fkCtrl.getNull(), parent)
+            parent = ctrlName
 
             # stash this iteration of fkCtrl into list fkCtrls
             fkCtrls.append(fkCtrl)
@@ -465,19 +312,24 @@ class Limb(part.Part):
         # create 2 distance nodes
         hiLimbDistNode = cmds.createNode(
             'distanceBetween',
-            name=("{0}_hiLimb_distBtwn").format(self.getName())
+            name=("{0}_hiLimb_CRNT_distBtwn").format(self.getName())
         )
 
         loLimbDistNode = cmds.createNode(
             'distanceBetween',
-            name=("{0}_loLimb_distBtwn").format(self.getName())
+            name=("{0}_loLimb_CRNT_distBtwn").format(self.getName())
         )
 
+        self.limbDistNodes = {
+            "hiLimb": hiLimbDistNode,
+            "loLimb": loLimbDistNode
+        }
+
         # loc creation for distNodes
-        self.hiLimbDistLoc1 = "{0}_hiLimbDistLoc1".format(self.getName())
-        self.hiLimbDistLoc2 = "{0}_hiLimbDistLoc2".format(self.getName())
-        self.loLimbDistLoc1 = "{0}_loLimbDistLoc1".format(self.getName())
-        self.loLimbDistLoc2 = "{0}_loLimbDistLoc2".format(self.getName())
+        self.hiLimbDistLoc1 = "{0}_hiLimbDist1_CRNT_{1}".format(self.getName(), nameSpace.LOCATOR)
+        self.hiLimbDistLoc2 = "{0}_hiLimbDist2_CRNT_{1}".format(self.getName(), nameSpace.LOCATOR)
+        self.loLimbDistLoc1 = "{0}_loLimbDist1_CRNT_{1}".format(self.getName(), nameSpace.LOCATOR)
+        self.loLimbDistLoc2 = "{0}_loLimbDist2_CRNT_{1}".format(self.getName(), nameSpace.LOCATOR)
         cmds.spaceLocator(n=self.hiLimbDistLoc1)
         cmds.spaceLocator(n=self.hiLimbDistLoc2)
         cmds.spaceLocator(n=self.loLimbDistLoc1)
@@ -487,7 +339,7 @@ class Limb(part.Part):
         cmds.delete(cmds.pointConstraint(self.ikJoints[0], self.hiLimbDistLoc1))
         cmds.delete(cmds.pointConstraint(self.ikJoints[1], self.hiLimbDistLoc2))
         cmds.delete(cmds.pointConstraint(self.ikJoints[1], self.loLimbDistLoc1))
-        cmds.delete(cmds.pointConstraint(self.ikJoints[1], self.loLimbDistLoc2))
+        cmds.delete(cmds.pointConstraint(self.ikJoints[2], self.loLimbDistLoc2))
 
         # create a group for these limbDistLoc
         cmds.createNode("transform", n=self.scaleStretchGroup)
@@ -565,7 +417,7 @@ class Limb(part.Part):
         # totalDistance
         self.limbTotalDist = cmds.createNode(
             'plusMinusAverage',
-            n="{0}_totalDist_mdn".format(self.getName())
+            n="{0}_totalDist_PMA".format(self.getName())
         )
 
         # connect hilimb and lolimb distance to total
@@ -708,6 +560,10 @@ class Limb(part.Part):
         cmds.setAttr("{0}.visibility".format(self.distLoc1), 0)
         cmds.setAttr("{0}.visibility".format(self.distLoc2), 0)
 
+        # slip into hierarchy
+        cmds.parent( self.distLoc1, self.joints[0])
+        cmds.parent( self.distLoc2, self.ikCtrl.getName())
+
     def noRollSetup(self):
         # spline twist bind joints setup
 
@@ -722,8 +578,8 @@ class Limb(part.Part):
         cmds.select(cl=True)
 
         # create uplimb spline
-        startPos = cmds.xform(self.startJoint.getName(), q=1, ws=1, t=1)
-        endPos = cmds.xform(self.middleJoint.getName(), q=1, ws=1, t=1)
+        startPos = cmds.xform(self.joints[0], q=1, ws=1, t=1)
+        endPos = cmds.xform(self.joints[1], q=1, ws=1, t=1)
 
         upSpline = spline.Spline(
             '{0}up'.format(self.getName()),
@@ -731,8 +587,7 @@ class Limb(part.Part):
             endJointDupe=self.ikfkSystem.getBlendJoints()[1]
         )
 
-        print 'startJoint to be duped is: {0}'.format( self.ikfkSystem.getBlendJoints()[0])
-        print 'END joint to be duped is: {0}'.format(self.ikfkSystem.getBlendJoints()[1])
+        print self.ikfkGroup
 
         upSpline.setup()
         upSpline.buildControls()
@@ -747,7 +602,6 @@ class Limb(part.Part):
 
         # Create twist readers/evaluators before creating lolimb setup
         # create a twist evaluator that happens at the elbow
-
 
         twistReader = hiNoroll.twistReader(
             self.getName(),
@@ -850,6 +704,8 @@ class Limb(part.Part):
         cmds.parent(loSpline.getMidCtrlZero(), self.noXformGroup)
         cmds.parent(loSpline.getEndCtrlZero(), self.noXformGroup)
 
+
+
         # hide things animators don't need to be looking at because they're ugly
         # ik handles
         cmds.setAttr('{0}.v'.format(upSpline.getSplineIk()), 0)
@@ -859,3 +715,14 @@ class Limb(part.Part):
         cmds.setAttr('{0}.v'.format(upSpline.getEndCtrlZero()), 0)
         cmds.setAttr('{0}.v'.format(loSpline.getStartCtrlZero()), 0)
         cmds.setAttr('{0}.v'.format(loSpline.getEndCtrlZero()), 0)
+
+        # connect global scales
+        cmds.connectAttr(
+            "{0}.distance".format(self.limbDistNodes["hiLimb"]),
+            "{0}.input2X".format( upSpline.getMdn() )
+        )
+
+        cmds.connectAttr(
+            "{0}.distance".format(self.limbDistNodes["loLimb"]),
+            "{0}.input2X".format(loSpline.getMdn())
+        )

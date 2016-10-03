@@ -74,6 +74,10 @@ class Noroll(object) :
         #hide ik
         cmds.setAttr( '{0}.v'.format(ik), 0 )
 
+        # hide them they ugly
+        cmds.setAttr( "{0}.v".format(self.dupJoint1), 0)
+        cmds.setAttr( "{0}.v".format(self.dupJoint2), 0)
+
     def twistReader(self, name, joint, noroll, aim, wuo ):
         #create a twist evaluator that happens at the elbow
         twistReader = cmds.duplicate(
@@ -94,5 +98,7 @@ class Noroll(object) :
             aim=(1,0,0),
             u=(0,1,0)
         )
+
+        cmds.setAttr( "{0}.v".format(twistReader), 0 )
 
         return twistReader

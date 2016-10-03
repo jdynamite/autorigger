@@ -18,6 +18,7 @@ GUIDE = "GUIDE"
 SETUP = "SET"
 IK = "IK"
 FK = "FK"
+UPV = "UPV"
 
 # joints
 BINDJOINT = "bindJNT"
