@@ -154,6 +154,28 @@ def extractSplits():
         
         cmds.setAttr( blendName, 0)
 
+def splitterUI():
+
+    # Make a new window
+    #
+    window = cmds.window( title="BlendShape Splitter Helper", iconName='Short Name', widthHeight=(370, 150) )
+    cmds.columnLayout( adjustableColumn=True )
+    
+    
+    cmds.separator(h=18, st="none")
+    
+    cmds.text( label='Select blendShapes to be split, then base mesh' )
+    cmds.button( label='Create Splitters', h=50, command="splitShapeSetup()" )
+    cmds.separator(h=12, st="none")
+    
+    cmds.text( label='Select all splitter shapes in correct order' )
+    cmds.button( label='Extract Split Shapes', h=50, command="extractSplits()" )
+    cmds.setParent( '..' )
+    cmds.showWindow( window )
+
+
+
+
 
 
 
