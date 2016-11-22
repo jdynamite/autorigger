@@ -1,3 +1,4 @@
+# 
 '''
 Blendshapes tools
 
@@ -37,10 +38,14 @@ def getTargets(bshp):
     return result
 
 # base is like the target destination
-def splitShapeSetup(meshList, base):
+def splitShapeSetup():
 
     # create 3 splitOutput meshes that will be painted
     # start with creating the splitters
+    selection = cmds.ls(sl=True)
+    meshList = selection[:-1]
+    base = selection[-1]
+    
     splitters = []
     blends = []
     meshes = ["A", "B", "C"]
@@ -57,7 +62,7 @@ def splitShapeSetup(meshList, base):
         dist = (int(i) + 1) * 10
         cmds.move(dist, 0, 0, split, r=True)
 
-        blend = "{0}_blend{1}".format(base, letter)
+        blend = "{0}_BSHP".format(split)
         cmds.select(split)
         cmds.blendShape(n=blend)
         splitters.append(split)
@@ -118,6 +123,36 @@ def setColors(mesh, color):
     cmds.setAttr("{0}.colorG".format(lam), c[1])
     cmds.setAttr("{0}.colorB".format(lam), c[2])
 
+
+# extractimg 
+# directions: select all split meshes and run
+# NOTE: shapes must be named correctly. "L_", "R_", and "C_" must be used as prefixes
+def extractSplits():
+    
+    splits = cmds.ls(sl=True)
+    bshp = "{0}_BSHP".format(splits[0])
+    
+    # first target should be set to 1, but just in case reset them all
+    targets = getTargets(bshp)
+    for target in targets:
+        blendName = "{0}.{1}".format(bshp, target)
+        cmds.setAttr( blendName, 0 )
+    
+    for target in targets:
+        blendName = "{0}.{1}".format(bshp, target)
+        cmds.setAttr( blendName, 1 )
+        
+        # duplicate each split
+        for i, split in enumerate(splits):
+            cmds.select(split)
+            
+            # name extraction
+            extract = target.split("_")
+            name = ("{0}_{1}{2}_{3}".format(extract[0], extract[1], str(i+1), extract[2]))
+            
+            cmds.duplicate(n=name)
+        
+        cmds.setAttr( blendName, 0)
 
 
 
