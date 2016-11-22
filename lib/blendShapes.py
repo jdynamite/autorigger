@@ -3,6 +3,7 @@ Blendshapes tools
 
 '''
 import maya.cmds as cmds
+import maya.mel as mel
 
 
 # extracts all blendshapes from selected blendshape NODE
@@ -34,3 +35,91 @@ def getTargets(bshp):
 
     result = cmds.listAttr(bshp, m=True, st="weight" )
     return result
+
+# base is like the target destination
+def splitShapeSetup(meshList, base):
+
+    # create 3 splitOutput meshes that will be painted
+    # start with creating the splitters
+    splitters = []
+    blends = []
+    meshes = ["A", "B", "C"]
+    inputMeshList = meshList
+
+    # first target plays an important role, this is the one we're going to default turn on and align to in tx
+    first = meshList[0]
+    for i, letter in enumerate(meshes):
+        # create splitters
+        split = "{0}_split{1}".format(base, letter)
+        cmds.duplicate(base, n=split)
+        cmds.delete(cmds.parentConstraint(first, split))
+        # how far to move the dup
+        dist = (int(i) + 1) * 10
+        cmds.move(dist, 0, 0, split, r=True)
+
+        blend = "{0}_blend{1}".format(base, letter)
+        cmds.select(split)
+        cmds.blendShape(n=blend)
+        splitters.append(split)
+        blends.append(blend)
+
+
+    # add blends and set them too yada yada
+    blendDrivers = []
+    blendDrivers = blendDrivers + meshList
+    for i, split in enumerate(splitters):
+
+        # connections?
+        cmds.select(blendDrivers)
+        cmds.select(split, tgl=True)
+        mel.eval("performBlendShapeAdd 0;")
+        blendDrivers.append(split)
+
+        # if a splitter, set to -1
+        for s in splitters:
+            splitBshp = "{0}.{1}".format(blends[i], s)
+            if cmds.objExists(splitBshp):
+                cmds.setAttr(splitBshp, -1)
+
+    # Turn on the first. Just as a default
+    for blend in blends:
+        cmds.setAttr("{0}.{1}".format(blend, first), 1)
+
+        # connect all meshList input shapes to each other
+        for i, target in enumerate(inputMeshList):
+            print inputMeshList
+            if blend != blends[0]:
+                cmds.connectAttr(
+                    "{0}.{1}".format(blends[0], target),
+                    "{0}.{1}".format(blend, target)
+                )
+
+    #set colors
+    setColors(splitters[0], "red")
+    setColors(splitters[1], "orange")
+    setColors(splitters[2], "yellow")
+
+def setColors(mesh, color):
+    c = []
+    if color == "yellow":
+        c = [0.575, 0.56, 0]
+    elif color == "orange":
+        c = [0.575, 0.32, 0]
+    else:
+        #red is default
+        c = [0.6, 0.15, 0.1]
+
+    lam = cmds.shadingNode("lambert", asShader=True)
+
+    cmds.select(mesh)
+    cmds.hyperShade(a=lam)
+
+    cmds.setAttr("{0}.colorR".format(lam), c[0])
+    cmds.setAttr("{0}.colorG".format(lam), c[1])
+    cmds.setAttr("{0}.colorB".format(lam), c[2])
+
+
+
+
+
+
