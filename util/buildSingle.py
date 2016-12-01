@@ -77,3 +77,20 @@ def buildSingle( name, shape="circle", color="yellow", position=(0, 0, 0)):
         "jnt": jnt
     }
     return result
+
+def buildMultiple(name, count):
+    '''
+
+    :param name: name of setup
+    :param count: how many singleRigs you'll need
+    :return: returns dict of all created in hierarchy
+    '''
+    result = []
+
+    for i in range(count):
+        thisName = name+str(i+1)
+        #buildControls with buildSingle
+        bs = buildSingle(thisName)
+        result.append(bs)
+
+    return result
