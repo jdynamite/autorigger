@@ -21,6 +21,24 @@ reload (joint)
 reload (wrappers)
 '''
 
+def superRibbon(name, cvs):
+
+    # the surface should already be created.
+    # All you have to do is select the CV's
+    result = []
+    for i,cv in enumerate(cvs):
+        thisName = name+str(i+1)
+        fol = follicle.createFollicle(cv, thisName)
+        #buildControls with buildSingle
+        bs = buildSingle.buildSingle(thisName)
+        cmds.delete(cmds.parentConstraint(fol, bs['master']))
+        cmds.parent(bs['master'], fol)
+
+        bs["fol"] = fol
+        result.append(bs)
+    return result
+
+
 #3 control set up ribbon
 class Ribbon(object):
 
@@ -290,21 +308,6 @@ class Ribbon(object):
         cmds.parent ( self.midLoc.getZeroGroup1(), self.masterGrp)
 
 
-def superRibbon(name, cvs):
 
-    # the surface should already be created.
-    # All you have to do is select the CV's
-    result = []
-    for i,cv in enumerate(cvs):
-        thisName = name+str(i+1)
-        fol = follicle.createFollicle(cv, thisName)
-        #buildControls with buildSingle
-        bs = buildSingle.buildSingle(thisName)
-        cmds.delete(cmds.parentConstraint(fol, bs['master']))
-        cmds.parent(bs['master'], fol)
-
-        bs["fol"] = fol
-        result.append(bs)
-    return result
 
 
