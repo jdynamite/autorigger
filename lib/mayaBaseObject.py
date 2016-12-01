@@ -111,18 +111,15 @@ class MayaBaseObject(object):
         cmds.xform(self.getName(), ws=world, ro=self.rotation)
 
     def zero(self):
-        null = self.name.strip(nameSpace.DELIMITER + self.nameType)
-        null += nameSpace.DELIMITER + nameSpace.NULL
+        null = self.name + nameSpace.DELIMITER + nameSpace.NULL
         self.null = cmds.duplicate(
             self.name,
-            rc=True,
+            po=True,
             n=null)[0]
 
         # delete children
-        cmds.delete(cmds.listRelatives(self.null, ad=True))
         cmds.parent(self.name, self.null)
         self.parent = self.null
 
         if cmds.objExists(self.parent) and self.null is not self.parent:
-
             cmds.parent(self.null, self.parent)

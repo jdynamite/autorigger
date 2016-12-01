@@ -27,11 +27,11 @@ class Control(mayaBaseObject.MayaBaseObject):
 
     """
 
-    def __init__(self, name=None, position=(0, 0, 0), align_to="world", parent="world", shape="circle", nameType=nameSpace.CONTROL):
+    def __init__(self, name=None, position=(0, 0, 0), align_to="world", parent="world", shape="circle", nameType=nameSpace.CONTROL, color="yellow"):
         super(Control, self).__init__(
             name=name, position=position, parent=parent, nameType=nameType)
 
-        self.color = "yellow"
+        self.color = color
         self.shape = shape
         self.align_to = align_to
         self.position = position
@@ -274,7 +274,10 @@ class Control(mayaBaseObject.MayaBaseObject):
         self.zero()
 
     def set_color(self, color):
-        color_map = {"red": 13, "yellow": 17, "blue": 6}
+        color_map = {"red": 13,
+                     "yellow": 17,
+                     "blue": 6,
+                     "green": 7}
         inv_map = {v: k for k, v in color_map.items()}
 
         shapes = cmds.listRelatives(self.name, c=True) or []
@@ -468,7 +471,6 @@ class Guide(Control):
         self.setPosition(self.position)
         # cmds.xform(null, ws=True, t=self.position)
 
-        print 'parent is {0}'.format(self.parent)
 
         # insert into hierarchy accordingly
         if self.getParent():

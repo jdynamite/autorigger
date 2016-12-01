@@ -32,3 +32,25 @@ def switch(node,attr,value=0,inputNames=list(),inputValues=list()):
 
     return "{0}.output".format(choiceName)
 
+def connect( nodeA, nodeB, t=True, r=True, s=True):
+
+    if t:
+        cmds.connectAttr(
+            "{0}.t".format(nodeA),
+            "{0}.t".format(nodeB)
+        )
+
+    if r:
+        cmds.connectAttr(
+            "{0}.r".format(nodeA),
+            "{0}.r".format(nodeB)
+        )
+
+    if s:
+        cmds.connectAttr(
+            "{0}.s".format(nodeA),
+            "{0}.s".format(nodeB)
+        )
+
+
+

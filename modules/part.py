@@ -30,7 +30,7 @@ from autorigger.lib import mayaBaseObject
 from autorigger.lib import control
 from autorigger.lib import joint
 from autorigger.lib import attribute
-
+from autorigger.lib import locator
 
 reload(control)
 
@@ -57,6 +57,7 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.upAxis = 'y'
 
         self.allJoints = []
+        self.upvs = []
 
         self.part = {}
 
@@ -79,9 +80,9 @@ class Part(mayaBaseObject.MayaBaseObject):
         self.masterGuide.create()
         self.masterGuide.setParent(self.guidesGroup)
 
-        #position masterGuide up a bit
+        #scale masterGuide up a bit
         cmds.select( "{0}Shape1.cv[0:7]".format(self.masterGuide.getName()) )
-        cmds.move( 0,5,0, r=True)
+        cmds.scale( 2,2,2, r=True)
 
 
     # just using this for now as a quick workaround. Can change it later.
@@ -207,7 +208,6 @@ class Part(mayaBaseObject.MayaBaseObject):
             return skeletonJnts
         return None
 
-
     def getDownAxis(self):
         return self.downAxis
 
@@ -261,7 +261,6 @@ class Part(mayaBaseObject.MayaBaseObject):
         attr = "{0}.lra".format(self.masterGuide.getName())
         return attr
 
-
     def setupJointOrientations(self, joints):
         #joints is list of joints
         # note that joints must be a single hierarchy AND in correct order
@@ -285,10 +284,11 @@ class Part(mayaBaseObject.MayaBaseObject):
             else:
 
                 #create upv loc
-                upv = cmds.spaceLocator(name = jnt.replace( nameSpace.JOINT, nameSpace.UPV))[0]
-                cmds.delete( cmds.parentConstraint( jnt, upv ) )
-                cmds.setAttr( "{0}.ty".format(upv), 3 )
-                cmds.parent(upv, self.guides[i].getName())
+                upv = locator.Locator( name = jnt.replace( nameSpace.JOINT, nameSpace.UPV) )
+                upv.create()
+                cmds.delete( cmds.parentConstraint( jnt, upv.getName() ) )
+                cmds.setAttr( "{0}.ty".format(upv.getName()), 3 )
+                cmds.parent(upv.getName(), self.guides[i].getName())
 
                 aimer = self.guides[i+1].getName()
                 constraints.append(
@@ -296,10 +296,10 @@ class Part(mayaBaseObject.MayaBaseObject):
                         aimer,
                         jnt,
                         wut="object",
-                        wuo=upv)[0]
+                        wuo=upv.getName())[0]
                 )
 
-                print self.masterGuide.getName()
+                self.upvs.append(upv)
 
                 # so that the aim and up are not both x
                 cmds.setAttr("{0}.up".format(self.masterGuide.getName()), 1)
@@ -336,6 +336,37 @@ class Part(mayaBaseObject.MayaBaseObject):
             else:
                 guide.setPosition(jointPositions[i])
 
+    def setPositionUPVS(self, position):
+        
+        for call in self.upvs:
 
+            upv = call.getName()
+            cmds.setAttr( "{0}.tx".format(upv), position[0] )
+            cmds.setAttr( "{0}.ty".format(upv), position[1] )
+            cmds.setAttr( "{0}.tz".format(upv), position[2] )
 
+    def setDownAxis(self, axis):
 
+        check = ["x", "y", "z", "-x", "-y", "-z"]
+
+        if not axis in check:
+            raise RuntimeError('Axis must be of value "x", "y", "z", "-x", "-y", or "-z".')
+
+        self.downAxis = axis
+        cmds.setAttr(
+            "{0}.aim".format(self.masterGuide.getName()),
+            check.index(self.downAxis)
+        )
+
+    def setUpAxis(self, axis):
+
+        check = ["x", "y", "z", "-x", "-y", "-z"]
+
+        if not axis in check:
+            raise RuntimeError('Axis must be of value "x", "y", "z", "-x", "-y", or "-z".')
+
+        self.downAxis = axis
+        cmds.setAttr(
+            "{0}.up".format(self.masterGuide.getName()),
+            check.index(self.downAxis)
+        )

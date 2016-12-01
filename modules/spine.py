@@ -42,46 +42,30 @@ reload(noRoll)
 reload(spline)
 
 class Spine(part.Part):
-    def __init__(self, name, position=([0, 10, 0], [0, 15, 0], [0, 18, 0] ), mirror=False):
+    def __init__(self, name, positions=([0, 10, 0], [0, 15, 0], [0, 18, 0] ), mirror=False):
         super(Spine, self).__init__(name)
 
-        self.position = position
-
-        print str(self.position) + ": position __________"
-
-        # joint init
-        self.spine1 = joint.Joint(
-            "spine1_{0}".format(nameSpace.BINDJOINT),
-            position=self.position[0]
-        )
-
-        self.spine2 = joint.Joint(
-            "spine2_{0}".format(nameSpace.BINDJOINT),
-            position = self.position[1]
-        )
-
-        self.spine3 = joint.Joint(
-            "spine3_{0}".format(nameSpace.BINDJOINT),
-            position = self.position[2]
-        )
+        self.positions = positions
 
         # this sets up the ribbon master group
         self.ribbonMasterGroup = "{0}_rbn_master_grp".format(name)
 
         self.mirror = mirror
 
+        self.downAxis = "y"
+        self.upAxis = "x"
+
+        self.controls = []
 
     def setup(self):
         super(Spine, self).setup()
 
+        self.placeGuides(self.positions)
 
-        # stores joint names in a list
-        jointList = [self.spine1, self.spine2, self.spine3]
+        self.setPositionUPVS( [5,0,0] )
 
-
-        self.createSetupJoints(jointList)
-
-
+        self.setDownAxis('y')
+        self.setUpAxis('x')
 
     def postSetup(self):
         super(Spine, self).postSetup()
@@ -92,28 +76,65 @@ class Spine(part.Part):
     def build(self):
         super(Spine, self).build()
 
+        # create control rig joints
+        self.controlRigJoints = []
+
+        for i, jnt in enumerate(self.joints):
+            result = cmds.duplicate(
+                jnt,
+                n=jnt.replace(nameSpace.BINDJOINT, "IK_JNT"),
+                po=True
+            )
+            self.controlRigJoints.append(result)
+
+            if i == 0:
+                cmds.select(result)
+                cmds.parent(w=True)
+            else:
+                cmds.parent( result, self.controlRigJoints[i-1] )
+
+        self.buildChest()
+        self.buildFk()
+
     def postBuild(self):
         super(Limb, self).postBuild()
 
-    def createSetupJoints(self, joints):
-        # this builds and names the bind joints
-        parent = self.skeletonGroup
-        self.guides = list()
-        for i, jnt in enumerate(joints):
-            print jnt.getPosition()
-            jnt.create()
-            print self.position[i]
-            jnt.setPosition(self.position[i])
-            jnt.setParent(parent)
-            self.guides.append(
-                self.createGuide(
-                    name=jnt.getName().replace(nameSpace.BINDJOINT, nameSpace.GUIDE),
-                    jnt=jnt.getName(),
-                    position=jnt.getPosition(),
-                    parent=self.guidesGroup
-                )
+    def buildChest(self):
+        # create chest control
+        self.chest = control.Control(
+            "chest",
+            shape="cube"
+        )
+        self.chest.create()
+        self.chest.setPosition(self.positions[1])
+
+        cmds.select(self.controlRigJoints[0])
+        cmds.select(self.controlRigJoints[1], tgl=True)
+        self.chestIKH = cmds.ikHandle(
+            name="chest_IKH",
+            sol = "ikSCsolver",
+        )[0]
+        cmds.parent( self.chestIKH, self.chest.getName() )
+        cmds.orientConstraint(
+            self.chest.getName(),
+            self.controlRigJoints[1]
+        )
+
+    def buildFk(self):
+
+        # create the fk controls
+        for i, jnt in enumerate(self.joints):
+
+            con = control.Control(
+                jnt.replace( nameSpace.JOINT, nameSpace.FK ),
             )
-            parent = jnt.getName()
+
+            con.create()
+            con.setPosition( self.positions[i] )
+
+            self.controls.append(con)
+
+
 
 
 

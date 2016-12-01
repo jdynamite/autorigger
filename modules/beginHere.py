@@ -55,6 +55,14 @@ class Test(part.Part):
         # do you want it to mirror?
         self.mirror = mirror
 
+        '''
+        IMPORTANT:
+        it's also a good practice to declare you up and down axises here in the init
+        '''
+        # like this
+        self.downAxis='x'
+        self.upAxis='y'
+
 
     def setup(self):
         super(Test, self).setup()
@@ -70,6 +78,17 @@ class Test(part.Part):
 
 
         self.placeGuides(self.positions)
+
+        '''
+        use self.setPositionUPVS() to position all UPVs relative to their parent(the guide)
+        '''
+        self.setPositionUPVS([0,0,5])
+
+        '''
+        Also, you can edit your up axis and down axis
+        '''
+        self.downAxis('x')
+        self.upAxis('-y')
 
 
     def postSetup(self):

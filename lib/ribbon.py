@@ -7,10 +7,13 @@ from autorigger.lib import nameSpace
 from autorigger.lib import control
 from autorigger.lib import joint
 from autorigger.lib import wrappers
+import follicle
+from autorigger.util import buildSingle
 reload(nameSpace)
 reload(control)
 reload(joint)
 reload(wrappers)
+
 '''
 reload (nameSpace)
 reload (control)
@@ -287,6 +290,21 @@ class Ribbon(object):
         cmds.parent ( self.midLoc.getZeroGroup1(), self.masterGrp)
 
 
+def superRibbon(name, cvs):
 
+    # the surface should already be created.
+    # All you have to do is select the CV's
+    result = []
+    for i,cv in enumerate(cvs):
+        thisName = name+str(i+1)
+        fol = follicle.createFollicle(cv, thisName)
+        #buildControls with buildSingle
+        bs = buildSingle.buildSingle(thisName)
+        cmds.delete(cmds.parentConstraint(fol, bs['master']))
+        cmds.parent(bs['master'], fol)
+
+        bs["fol"] = fol
+        result.append(bs)
+    return result
 
 

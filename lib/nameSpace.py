@@ -59,9 +59,12 @@ def getSide(name):
 
     name = name.rstrip('1234567890')
 
+    '''
     if DELIMITER not in name:
         err = "{0} must be part of name. {1}"
         raise RuntimeError(err.format(DELIMITER, NAMETEMPLATE))
+    '''
+
 
     # if not L_, R_, or C_
     # expanded to accept suffixes _L

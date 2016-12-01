@@ -100,9 +100,9 @@ def splitShapeSetup():
                 )
 
     #set colors
-    setColors(splitters[0], "red")
-    setColors(splitters[1], "orange")
-    setColors(splitters[2], "yellow")
+    #setColors(splitters[0], "red")
+    #setColors(splitters[1], "orange")
+    #setColors(splitters[2], "yellow")
 
 def setColors(mesh, color):
     c = []
@@ -165,11 +165,11 @@ def splitterUI():
     cmds.separator(h=18, st="none")
     
     cmds.text( label='Select blendShapes to be split, then base mesh' )
-    cmds.button( label='Create Splitters', h=50, command="splitShapeSetup()" )
+    cmds.button( label='Create Splitters', h=50, command="blendShapes.splitShapeSetup()" )
     cmds.separator(h=12, st="none")
     
     cmds.text( label='Select all splitter shapes in correct order' )
-    cmds.button( label='Extract Split Shapes', h=50, command="extractSplits()" )
+    cmds.button( label='Extract Split Shapes', h=50, command="blendShapes.extractSplits()" )
     cmds.setParent( '..' )
     cmds.showWindow( window )
 
