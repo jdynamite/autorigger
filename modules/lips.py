@@ -3,51 +3,73 @@
 import maya.cmds as cmds
 from autorigger.lib import ribbon
 
-def createLipRibbon(name, cvs):
-    '''
+class Lip(object):
 
-        DIRECTIONS:
-            planes should already be created. Both HR and LR
-            CV selection MUST be from left to right ALWAYS
+    def __init__(self, name, cvs):
+        self.name = name
+        self.cvs = cvs
 
-    '''
+    def createLipRibbon(self):
+        '''
+            DIRECTIONS:
+                planes should already be created. Both HR and LR
+                CV selection MUST be from left to right ALWAYS
+
+        '''
+
+        # create lips master
+        master = cmds.createNode("transform", n="name_GRP")
+
+        rbn = ribbon.superRibbon(self.name, self.cvs)
+
+        # parent to hierarchy
+        for r in rbn:
+            cmds.parent(r["fol"], master)
+
+        #rename buildSingles(minors)
+        renameRig(self.name, rbn)
 
 
-    # create lips master
-    cmds.createNode("transform", n="name_GRP")
+    def renameRig(self, dict):
+        '''
+        :param dict: dictList to be renamed
+        :return: None
+        '''
+        dictList = [
+            "master",
+            "cNull",
+            "jNull",
+            "con",
+            "jnt",
+            "fol"
+        ]
 
-    rbn = ribbon.superRibbon(name, cvs)
+        # get center of selection count
+        dictSize = len(dict)
+        center = dictSize/2
 
-    # get center of selection count
-    cvCount = len(cvs)
-    center = cvCount/2
+        # Set the prefix
+        L = 1
+        R = center
+        #dictSize is list
+        for i in range(dictSize):
 
-    # then just rename them accordingly
-    for cv in range(cvCount):
-        prefix = "L_"
-        if cv == center:
-            prefix = "C_"
-        if cv > center:
-            prefix = "R_"
+            prefix = "L_{0}{1}".format(self.name, str(L))
+            L += 1
+            if i == center:
+                prefix = "C_{0}1".format(self.name)
+            if i > center:
+                prefix = "R_{0}{1}".format(self.name, str(R))
+                R = R-1
 
-        addPrefix(prefix, rbn[cv])
+            # d is each dict within list
+            for d in dictList:
+                thisDict = dict[i][d]
 
-    # parent to hierarchy
+                buffer = thisDict.split("_")
+                oldName = buffer[0]
 
-def addPrefix(prefix, dict):
-
-    dictList = [
-        "master",
-        "cNull",
-        "jNull",
-        "con",
-        "jnt",
-        "fol"
-    ]
-
-    for i in dictList:
-        newName = "{0}{1}".format(prefix, dict[i])
-        cmds.rename(dict[i], newName)
-
+                newName = thisDict.replace(oldName, prefix)
+                cmds.rename(thisDict, newName)
 
 
